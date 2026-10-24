@@ -1,0 +1,55 @@
+
+.add-bus-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.add-bus-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-bus-field label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.add-bus-field input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.add-bus-field input:focus {
+  outline: 2px solid #93c5fd;
+  border-color: #2563eb;
+}
+
+.add-bus-form > button {
+  justify-self: start;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.add-bus-form > button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 650px) {
+  .add-bus-form {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+}

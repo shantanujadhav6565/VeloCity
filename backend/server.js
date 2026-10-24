@@ -1,0 +1,868 @@
+require("dotenv").config();
+
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const dns = require("node:dns");
+
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
+const Bus = require("./models/Bus");
+const Driver = require("./models/Driver");
+
+const authRoutes = require("./routes/authRoutes");
+const driverRoutes = require("./routes/driverRoutes");
+const passengerTripRoute = require("./routes/passengerTripRoute");
+const conductorRoutes = require("./routes/conductorRoutes");
+
+const authenticate = require("./middleware/auth");
+const authorize = require("./middleware/authorize");
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// ==================================================
+// MIDDLEWARE
+// ==================================================
+
+app.use(cors());
+app.use(express.json({ limit: "1mb" }));
+
+// ==================================================
+// AUTHENTICATION AND OTHER ROUTES
+// ==================================================
+
+app.use("/api/auth", authRoutes);
+app.use("/api/passenger-trips", passengerTripRoute);
+
+// CONDUCTOR ROUTES
+app.use("/api/conductors", conductorRoutes);
+
+// ADMIN: DRIVER MANAGEMENT ROUTES
+app.use(
+  "/api/drivers",
+  authenticate,
+  authorize("Admin"),
+  driverRoutes
+);
+
+// ==================================================
+// HOME ROUTE
+// ==================================================
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Welcome to VeloCity API",
+    status: "Backend is running",
+  });
+});
+
+// ==================================================
+// GET ALL BUSES
+// ==================================================
+
+app.get("/api/buses", async (req, res) => {
+  try {
+    const buses = await Bus.find()
+      .populate("assignedDriver", "driverCode name status")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: buses.length,
+      buses,
+    });
+  } catch (error) {
+    console.error("Fetch buses error:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch buses",
+    });
+  }
+});
+
+// ==================================================
+// GET BUS BY ID
+// ==================================================
+
+app.get("/api/buses/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid bus ID",
+      });
+    }
+
+    const bus = await Bus.findById(id).populate(
+      "assignedDriver",
+      "driverCode name status"
+    );
+
+    if (!bus) {
+      return res.status(404).json({
+        success: false,
+        message: "Bus not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      bus,
+    });
+  } catch (error) {
+    console.error("Fetch bus error:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch bus",
+    });
+  }
+});
+
+// ==================================================
+// ADMIN: ADD BUS
+// ==================================================
+
+app.post(
+  "/api/buses",
+  authenticate,
+  authorize("Admin"),
+  async (req, res) => {
+    try {
+      const {
+        busNumber,
+        source,
+        destination,
+        route,
+        sourceLatitude,
+        sourceLongitude,
+        destinationLatitude,
+        destinationLongitude,
+        busImage,
+      } = req.body;
+
+      if (
+        typeof busNumber !== "string" ||
+        !busNumber.trim() ||
+        typeof source !== "string" ||
+        !source.trim() ||
+        typeof destination !== "string" ||
+        !destination.trim() ||
+        typeof route !== "string" ||
+        !route.trim()
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "busNumber, source, destination and route are required",
+        });
+      }
+
+      const bus = await Bus.create({
+        busNumber: busNumber.trim(),
+        source: source.trim(),
+        destination: destination.trim(),
+        route: route.trim(),
+        status: "Stopped",
+        tripStatus: "Not Started",
+        sourceLatitude: sourceLatitude ?? null,
+        sourceLongitude: sourceLongitude ?? null,
+        destinationLatitude: destinationLatitude ?? null,
+        destinationLongitude: destinationLongitude ?? null,
+        latitude: null,
+        longitude: null,
+        busImage: typeof busImage === "string" ? busImage : "",
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Bus added successfully",
+        bus,
+      });
+    } catch (error) {
+      console.error("Add bus error:", error.message);
+
+      if (error.code === 11000) {
+        return res.status(409).json({
+          success: false,
+          message: "This bus number already exists",
+        });
+      }
+
+      res.status(400).json({
+        success: false,
+        message: "Failed to add bus",
+      });
+    }
+  }
+);
+
+// ==================================================
+// ADMIN: UPDATE BUS DETAILS
+// ==================================================
+
+app.put(
+  "/api/buses/:id",
+  authenticate,
+  authorize("Admin"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid bus ID",
+        });
+      }
+
+      const details = { ...req.body };
+
+      [
+        "_id",
+        "__v",
+        "assignedDriver",
+        "tripStatus",
+        "tripStartedAt",
+        "tripEndedAt",
+        "tripHistory",
+        "status",
+        "latitude",
+        "longitude",
+        "lastLocationUpdate",
+        "locationHistory",
+      ].forEach((field) => delete details[field]);
+
+      const bus = await Bus.findByIdAndUpdate(id, details, {
+        new: true,
+        runValidators: true,
+      }).populate("assignedDriver", "driverCode name status");
+
+      if (!bus) {
+        return res.status(404).json({
+          success: false,
+          message: "Bus not found",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Bus updated successfully",
+        bus,
+      });
+    } catch (error) {
+      console.error("Update bus error:", error.message);
+
+      res.status(400).json({
+        success: false,
+        message: "Failed to update bus",
+      });
+    }
+  }
+);
+
+// ==================================================
+// ADMIN: ASSIGN DRIVER TO BUS
+// ==================================================
+
+app.patch(
+  "/api/buses/:id/assign-driver",
+  authenticate,
+  authorize("Admin"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { driverId } = req.body;
+
+      if (
+        !mongoose.isValidObjectId(id) ||
+        !mongoose.isValidObjectId(driverId)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Valid bus ID and driverId are required",
+        });
+      }
+
+      const bus = await Bus.findById(id);
+
+      if (!bus) {
+        return res.status(404).json({
+          success: false,
+          message: "Bus not found",
+        });
+      }
+
+      if (bus.tripStatus === "In Progress") {
+        return res.status(409).json({
+          success: false,
+          message: "Cannot change driver during an active trip",
+        });
+      }
+
+      const driver = await Driver.findById(driverId);
+
+      if (!driver || driver.status === "Inactive") {
+        return res.status(404).json({
+          success: false,
+          message: "Active driver not found",
+        });
+      }
+
+      // Prevent the same driver from being assigned to another bus.
+      const existingBus = await Bus.findOne({
+        assignedDriver: driver._id,
+        _id: { $ne: bus._id },
+      });
+
+      if (existingBus) {
+        return res.status(409).json({
+          success: false,
+          message: "This driver is already assigned to another bus",
+        });
+      }
+
+      // Release the previous driver if replacing them.
+      if (
+        bus.assignedDriver &&
+        bus.assignedDriver.toString() !== driver._id.toString()
+      ) {
+        await Driver.findByIdAndUpdate(bus.assignedDriver, {
+          status: "Available",
+        });
+      }
+
+      bus.assignedDriver = driver._id;
+      bus.tripStatus = "Not Started";
+      bus.tripStartedAt = null;
+      bus.tripEndedAt = null;
+
+      await bus.save();
+
+      driver.status = "On Duty";
+      await driver.save();
+
+      const updatedBus = await Bus.findById(bus._id).populate(
+        "assignedDriver",
+        "driverCode name status"
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Driver assigned successfully",
+        bus: updatedBus,
+      });
+    } catch (error) {
+      console.error("Assign driver error:", error.message);
+
+      res.status(500).json({
+        success: false,
+        message: "Failed to assign driver",
+      });
+    }
+  }
+);
+
+// ==================================================
+// ADMIN: REMOVE DRIVER ASSIGNMENT
+// ==================================================
+
+app.delete(
+  "/api/buses/:id/assign-driver",
+  authenticate,
+  authorize("Admin"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid bus ID",
+        });
+      }
+
+      const bus = await Bus.findById(id);
+
+      if (!bus) {
+        return res.status(404).json({
+          success: false,
+          message: "Bus not found",
+        });
+      }
+
+      if (bus.tripStatus === "In Progress") {
+        return res.status(409).json({
+          success: false,
+          message: "End the active trip before unassigning the driver",
+        });
+      }
+
+      const previousDriverId = bus.assignedDriver;
+
+      bus.assignedDriver = null;
+      bus.tripStatus = "Not Started";
+      bus.tripStartedAt = null;
+      bus.tripEndedAt = null;
+
+      await bus.save();
+
+      if (previousDriverId) {
+        await Driver.findByIdAndUpdate(previousDriverId, {
+          status: "Available",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Driver assignment removed",
+        bus,
+      });
+    } catch (error) {
+      console.error("Unassign driver error:", error.message);
+
+      res.status(500).json({
+        success: false,
+        message: "Failed to remove driver assignment",
+      });
+    }
+  }
+);
+
+// ==================================================
+// DRIVER: START BUS TRIP
+// ==================================================
+
+app.patch(
+  "/api/buses/:id/start-trip",
+  authenticate,
+  authorize("Driver"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid bus ID",
+        });
+      }
+
+      if (!req.user.driver) {
+        return res.status(403).json({
+          success: false,
+          message: "No driver profile is linked to this account",
+        });
+      }
+
+      const bus = await Bus.findById(id);
+
+      if (!bus) {
+        return res.status(404).json({
+          success: false,
+          message: "Bus not found",
+        });
+      }
+
+      if (
+        !bus.assignedDriver ||
+        bus.assignedDriver.toString() !== req.user.driver.toString()
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not assigned to this bus",
+        });
+      }
+
+      if (bus.tripStatus === "In Progress") {
+        return res.status(409).json({
+          success: false,
+          message: "Trip is already in progress",
+        });
+      }
+
+      bus.tripStatus = "In Progress";
+      bus.status = "Running";
+      bus.tripStartedAt = new Date();
+      bus.tripEndedAt = null;
+
+      await bus.save();
+
+      await Driver.findByIdAndUpdate(req.user.driver, {
+        status: "On Duty",
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Trip started successfully",
+        bus,
+      });
+    } catch (error) {
+      console.error("Start trip error:", error.message);
+
+      res.status(500).json({
+        success: false,
+        message: "Failed to start trip",
+      });
+    }
+  }
+);
+
+// ==================================================
+// DRIVER: END BUS TRIP
+// Save completed trip history and release the driver.
+// ==================================================
+
+app.patch(
+  "/api/buses/:id/end-trip",
+  authenticate,
+  authorize("Driver"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid bus ID",
+        });
+      }
+
+      if (!req.user.driver) {
+        return res.status(403).json({
+          success: false,
+          message: "No driver profile is linked to this account",
+        });
+      }
+
+      const bus = await Bus.findById(id);
+
+      if (!bus) {
+        return res.status(404).json({
+          success: false,
+          message: "Bus not found",
+        });
+      }
+
+      if (
+        !bus.assignedDriver ||
+        bus.assignedDriver.toString() !== req.user.driver.toString()
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not assigned to this bus",
+        });
+      }
+
+      if (bus.tripStatus !== "In Progress") {
+        return res.status(409).json({
+          success: false,
+          message: "There is no active trip to end",
+        });
+      }
+
+      const endedAt = new Date();
+      const startedAt = bus.tripStartedAt || endedAt;
+      const durationMinutes = Math.max(
+        0,
+        Math.round((endedAt.getTime() - startedAt.getTime()) / 60000)
+      );
+
+      const driver = await Driver.findById(req.user.driver);
+
+      // Store the completed trip in MongoDB.
+      bus.tripHistory.push({
+        busNumber: bus.busNumber || "",
+        driver: driver?._id || req.user.driver,
+        driverName: driver?.name || "",
+        driverCode: driver?.driverCode || "",
+        source: bus.source || "",
+        destination: bus.destination || "",
+        route: bus.route || "",
+        startedAt,
+        endedAt,
+        durationMinutes,
+        tripStatus: "Completed",
+      });
+
+      bus.tripStatus = "Completed";
+      bus.status = "Stopped";
+      bus.tripEndedAt = endedAt;
+
+      // Release the driver so another bus can be assigned.
+      bus.assignedDriver = null;
+
+      await bus.save();
+
+      await Driver.findByIdAndUpdate(req.user.driver, {
+        status: "Available",
+      });
+
+      const updatedBus = await Bus.findById(bus._id).populate(
+        "assignedDriver",
+        "driverCode name status"
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Trip completed. Driver is now available.",
+        durationMinutes,
+        bus: updatedBus,
+      });
+    } catch (error) {
+      console.error("End trip error:", error.message);
+
+      res.status(500).json({
+        success: false,
+        message: "Failed to end trip",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// ==================================================
+// DRIVER: UPDATE GPS LOCATION
+// ==================================================
+
+app.patch(
+  "/api/buses/:id/location",
+  authenticate,
+  authorize("Driver"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { latitude, longitude } = req.body;
+
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid bus ID",
+        });
+      }
+
+      if (
+        typeof latitude !== "number" ||
+        typeof longitude !== "number" ||
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude) ||
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Valid numeric latitude and longitude are required",
+        });
+      }
+
+      if (!req.user.driver) {
+        return res.status(403).json({
+          success: false,
+          message: "No driver profile is linked to this account",
+        });
+      }
+
+      const bus = await Bus.findById(id);
+
+      if (!bus) {
+        return res.status(404).json({
+          success: false,
+          message: "Bus not found",
+        });
+      }
+
+      if (
+        !bus.assignedDriver ||
+        bus.assignedDriver.toString() !== req.user.driver.toString()
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not assigned to this bus",
+        });
+      }
+
+      if (bus.tripStatus !== "In Progress") {
+        return res.status(409).json({
+          success: false,
+          message: "Start the assigned trip before sharing GPS",
+        });
+      }
+
+      bus.latitude = latitude;
+      bus.longitude = longitude;
+      bus.lastLocationUpdate = new Date();
+
+      const lastPoint =
+        bus.locationHistory?.[bus.locationHistory.length - 1];
+
+      if (
+        !lastPoint ||
+        lastPoint.latitude !== latitude ||
+        lastPoint.longitude !== longitude
+      ) {
+        bus.locationHistory.push({
+          latitude,
+          longitude,
+          timestamp: new Date(),
+        });
+      }
+
+      // Keep location history limited to the latest 500 points.
+      if (bus.locationHistory.length > 500) {
+        bus.locationHistory = bus.locationHistory.slice(-500);
+      }
+
+      await bus.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Bus location updated successfully",
+        bus,
+      });
+    } catch (error) {
+      console.error("Update location error:", error.message);
+
+      res.status(500).json({
+        success: false,
+        message: "Failed to update bus location",
+      });
+    }
+  }
+);
+
+// ==================================================
+// ADMIN: DELETE BUS
+// ==================================================
+
+app.delete(
+  "/api/buses/:id",
+  authenticate,
+  authorize("Admin"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid bus ID",
+        });
+      }
+
+      const bus = await Bus.findById(id);
+
+      if (!bus) {
+        return res.status(404).json({
+          success: false,
+          message: "Bus not found",
+        });
+      }
+
+      if (bus.tripStatus === "In Progress") {
+        return res.status(409).json({
+          success: false,
+          message: "Cannot delete a bus during an active trip",
+        });
+      }
+
+      const previousDriverId = bus.assignedDriver;
+
+      await Bus.findByIdAndDelete(id);
+
+      if (previousDriverId) {
+        await Driver.findByIdAndUpdate(previousDriverId, {
+          status: "Available",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Bus deleted successfully",
+      });
+    } catch (error) {
+      console.error("Delete bus error:", error.message);
+
+      res.status(500).json({
+        success: false,
+        message: "Failed to delete bus",
+      });
+    }
+  }
+);
+
+// ==================================================
+// 404 HANDLER
+// ==================================================
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "API route not found",
+  });
+});
+
+// ==================================================
+// GLOBAL ERROR HANDLER
+// ==================================================
+
+app.use((err, req, res, next) => {
+  console.error("Unexpected server error:", err);
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  res.status(500).json({
+    success: false,
+    message: "Internal server error",
+  });
+});
+
+// ==================================================
+// START SERVER
+// ==================================================
+
+async function startServer() {
+  try {
+    if (!process.env.MONGODB_URI) {
+      throw new Error("MONGODB_URI is missing from .env");
+    }
+
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is missing from .env");
+    }
+
+    await mongoose.connect(process.env.MONGODB_URI);
+
+    console.log("MongoDB connected successfully!");
+
+    app.listen(PORT, () => {
+      console.log(`VeloCity backend running on port ${PORT}`);
+      console.log(`Home API: http://localhost:${PORT}/`);
+      console.log(`Buses API: http://localhost:${PORT}/api/buses`);
+      console.log(`Drivers API: http://localhost:${PORT}/api/drivers`);
+      console.log(`Auth API: http://localhost:${PORT}/api/auth`);
+      console.log(
+        `Passenger Trips API: http://localhost:${PORT}/api/passenger-trips`
+      );
+      console.log(
+        `Conductors API: http://localhost:${PORT}/api/conductors`
+      );
+      console.log(
+        `Conductor Profile API: http://localhost:${PORT}/api/conductors/me`
+      );
+    });
+  } catch (error) {
+    console.error("Backend startup failed:", error.message);
+    process.exit(1);
+  }
+}
+
+startServer();

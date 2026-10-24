@@ -1,0 +1,334 @@
+
+.uber-map-card {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+}
+
+.uber-map-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+}
+
+.uber-eyebrow {
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.uber-map-heading h3 {
+  margin: 5px 0 3px;
+  font-size: 21px;
+  font-weight: 750;
+}
+
+.uber-map-heading p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.uber-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.uber-live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #16a34a;
+}
+
+.uber-map-container {
+  position: relative;
+  height: 430px;
+  background: #e5e7eb;
+}
+
+.uber-map {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.uber-bus-icon,
+.uber-stop-icon {
+  background: transparent;
+  border: none;
+}
+
+.uber-bus-marker {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #276ef1;
+  box-shadow: 0 3px 12px #0000004d;
+  font-size: 24px;
+}
+
+.uber-source-marker {
+  width: 18px;
+  height: 18px;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: #16a34a;
+  box-shadow: 0 2px 8px #0000004d;
+}
+
+.uber-destination-marker {
+  display: flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  background: #dc2626;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 2px 8px #0000004d;
+  transform: rotate(-45deg);
+}
+
+.uber-map-notice {
+  position: absolute;
+  z-index: 500;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  max-width: 260px;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 3px 14px #0000001a;
+}
+
+.uber-map-notice strong {
+  font-size: 13px;
+}
+
+.uber-map-notice span {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.uber-route-notice {
+  position: absolute;
+  z-index: 500;
+  right: 12px;
+  bottom: 12px;
+  max-width: calc(100% - 24px);
+  padding: 10px 13px;
+  border-radius: 10px;
+  background: #111827;
+  color: #fff;
+  font-size: 12px;
+  box-shadow: 0 3px 12px #0000002e;
+}
+
+.uber-recenter-button {
+  position: absolute;
+  z-index: 500;
+  top: 14px;
+  right: 14px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #111827;
+  font-size: 27px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px #0000001f;
+}
+
+.uber-trip-details {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.uber-trip-point {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.uber-trip-point > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.uber-trip-point small {
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.uber-trip-point strong {
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.uber-trip-source-dot {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  border: 3px solid #16a34a;
+  border-radius: 50%;
+}
+
+.uber-trip-destination-dot {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  border: 3px solid #dc2626;
+  border-radius: 3px;
+}
+
+.uber-trip-connector {
+  width: 2px;
+  height: 23px;
+  margin: 4px 0 4px 5px;
+  border-left: 2px dashed #d1d5db;
+}
+
+.uber-map-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 20px;
+  border-top: 1px solid #f3f4f6;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.uber-map-footer > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+@media (max-width: 600px) {
+  .uber-map-heading {
+    align-items: flex-start;
+    padding: 15px;
+  }
+
+  .uber-map-heading h3 {
+    font-size: 18px;
+  }
+
+  .uber-status-pill {
+    padding: 7px 8px;
+    font-size: 10px;
+  }
+
+  .uber-map-container {
+    height: 340px;
+  }
+
+  .uber-trip-details {
+    padding: 16px;
+  }
+
+  .uber-map-footer {
+    padding: 12px 15px;
+    font-size: 10px;
+  }
+}
+
+/* Fix Leaflet map visibility */
+.real-map-wrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: 450px;
+  overflow: hidden;
+}
+
+.real-map {
+  display: block;
+  width: 100% !important;
+  height: 450px !important;
+  min-height: 450px;
+  background: #e5e7eb;
+  z-index: 1;
+}
+
+.real-map .leaflet-pane,
+.real-map .leaflet-tile,
+.real-map .leaflet-marker-icon,
+.real-map .leaflet-marker-shadow {
+  visibility: visible;
+}
+
+.real-map .leaflet-tile {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.real-map .leaflet-container {
+  font-family: Arial, sans-serif;
+}
+
+/* Leaflet map rendering fix */
+.real-map-wrapper {
+  position: relative;
+  width: 100%;
+  height: 450px;
+  min-height: 450px;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.real-map-wrapper .leaflet-container {
+  width: 100%;
+  height: 450px;
+  min-height: 450px;
+  background: #e5e7eb;
+  font-family: Arial, sans-serif;
+}
+
+.real-map-wrapper .leaflet-tile {
+  visibility: visible !important;
+  max-width: none !important;
+}
+
+.real-map-wrapper .leaflet-pane,
+.real-map-wrapper .leaflet-tile-container,
+.real-map-wrapper .leaflet-marker-pane,
+.real-map-wrapper .leaflet-overlay-pane {
+  visibility: visible !important;
+}
