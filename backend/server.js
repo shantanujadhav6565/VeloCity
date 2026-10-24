@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 
 const express = require("express");
@@ -9,11 +10,11 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const Bus = require("./models/Bus");
 const Driver = require("./models/Driver");
-
 const authRoutes = require("./routes/authRoutes");
 const driverRoutes = require("./routes/driverRoutes");
 const passengerTripRoute = require("./routes/passengerTripRoute");
 const conductorRoutes = require("./routes/conductorRoutes");
+const ticketRoutes = require("./routes/ticketRoutes");
 
 const authenticate = require("./middleware/auth");
 const authorize = require("./middleware/authorize");
@@ -33,10 +34,14 @@ app.use(express.json({ limit: "1mb" }));
 // ==================================================
 
 app.use("/api/auth", authRoutes);
+
 app.use("/api/passenger-trips", passengerTripRoute);
 
-// CONDUCTOR ROUTES
 app.use("/api/conductors", conductorRoutes);
+
+// Ticket routes.
+// The ticketRoutes file must export an Express router.
+app.use("/api/tickets", ticketRoutes);
 
 // ADMIN: DRIVER MANAGEMENT ROUTES
 app.use(
@@ -227,6 +232,7 @@ app.put(
         "_id",
         "__v",
         "assignedDriver",
+        "assignedConductor",
         "tripStatus",
         "tripStartedAt",
         "tripEndedAt",
@@ -236,6 +242,12 @@ app.put(
         "longitude",
         "lastLocationUpdate",
         "locationHistory",
+        "currentPassengerCount",
+        "crowdLastUpdated",
+        "crowdUpdateMode",
+        "manualCrowdUpdate",
+        "currentStopSequence",
+        "currentStopName",
       ].forEach((field) => delete details[field]);
 
       const bus = await Bus.findByIdAndUpdate(id, details, {
@@ -314,7 +326,6 @@ app.patch(
         });
       }
 
-      // Prevent the same driver from being assigned to another bus.
       const existingBus = await Bus.findOne({
         assignedDriver: driver._id,
         _id: { $ne: bus._id },
@@ -327,7 +338,6 @@ app.patch(
         });
       }
 
-      // Release the previous driver if replacing them.
       if (
         bus.assignedDriver &&
         bus.assignedDriver.toString() !== driver._id.toString()
@@ -515,7 +525,6 @@ app.patch(
 
 // ==================================================
 // DRIVER: END BUS TRIP
-// Save completed trip history and release the driver.
 // ==================================================
 
 app.patch(
@@ -568,6 +577,7 @@ app.patch(
 
       const endedAt = new Date();
       const startedAt = bus.tripStartedAt || endedAt;
+
       const durationMinutes = Math.max(
         0,
         Math.round((endedAt.getTime() - startedAt.getTime()) / 60000)
@@ -575,7 +585,6 @@ app.patch(
 
       const driver = await Driver.findById(req.user.driver);
 
-      // Store the completed trip in MongoDB.
       bus.tripHistory.push({
         busNumber: bus.busNumber || "",
         driver: driver?._id || req.user.driver,
@@ -593,8 +602,14 @@ app.patch(
       bus.tripStatus = "Completed";
       bus.status = "Stopped";
       bus.tripEndedAt = endedAt;
+      bus.currentPassengerCount = 0;
+      bus.crowdLastUpdated = endedAt;
+      bus.crowdUpdateMode = "tickets";
+      bus.manualCrowdUpdate = null;
+      bus.currentStopSequence = null;
+      bus.currentStopName = "";
 
-      // Release the driver so another bus can be assigned.
+      // Release the driver after trip completion.
       bus.assignedDriver = null;
 
       await bus.save();
@@ -714,7 +729,6 @@ app.patch(
         });
       }
 
-      // Keep location history limited to the latest 500 points.
       if (bus.locationHistory.length > 500) {
         bus.locationHistory = bus.locationHistory.slice(-500);
       }
@@ -856,7 +870,7 @@ async function startServer() {
         `Conductors API: http://localhost:${PORT}/api/conductors`
       );
       console.log(
-        `Conductor Profile API: http://localhost:${PORT}/api/conductors/me`
+        `Tickets API: http://localhost:${PORT}/api/tickets`
       );
     });
   } catch (error) {

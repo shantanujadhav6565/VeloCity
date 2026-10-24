@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import {
   NavLink,
@@ -28,6 +27,59 @@ const PASSENGER_TRIP_API =
   "http://localhost:5000/api/passenger-trips";
 
 const REFRESH_INTERVAL = 3000;
+
+// =====================================================
+// SESSION HELPERS
+// =====================================================
+
+function getStoredUser() {
+  try {
+    const sessionUser = sessionStorage.getItem("user");
+    const localUser = localStorage.getItem("user");
+
+    const rawUser = sessionUser || localUser;
+
+    if (!rawUser) return null;
+
+    const parsedUser = JSON.parse(rawUser);
+
+    return parsedUser && typeof parsedUser === "object"
+      ? parsedUser
+      : null;
+  } catch (error) {
+    console.error("Unable to read stored user:", error);
+    return null;
+  }
+}
+
+function getToken() {
+  return (
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("token") ||
+    ""
+  );
+}
+
+// =====================================================
+// ROLE-BASED DEFAULT DASHBOARD
+// =====================================================
+
+function getDashboardPath(user) {
+  switch (user?.role) {
+    case "Admin":
+      return "/admin";
+
+    case "Driver":
+      return "/driver";
+
+    case "Conductor":
+      return "/conductor";
+
+    case "Passenger":
+    default:
+      return "/home";
+  }
+}
 
 // =====================================================
 // SIDEBAR MENU
@@ -78,24 +130,6 @@ const menuItems = [
     roles: ["Conductor"],
   },
 ];
-
-// =====================================================
-// SESSION HELPERS
-// =====================================================
-
-function getStoredUser() {
-  try {
-    return JSON.parse(
-      sessionStorage.getItem("user") || "null"
-    );
-  } catch {
-    return null;
-  }
-}
-
-function getToken() {
-  return sessionStorage.getItem("token");
-}
 
 // =====================================================
 // HOME PAGE
@@ -200,8 +234,7 @@ function HomePage() {
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            "Unable to load your active trip"
+          data.message || "Unable to load your active trip"
         );
       }
 
@@ -249,9 +282,7 @@ function HomePage() {
     setSearchMessage("");
 
     if (!busNumber.trim()) {
-      setSearchMessage(
-        "Please enter a bus number first."
-      );
+      setSearchMessage("Please enter a bus number first.");
       return;
     }
 
@@ -438,10 +469,7 @@ function HomePage() {
             place.
           </p>
 
-          <form
-            className="search-form"
-            onSubmit={handleSearch}
-          >
+          <form className="search-form" onSubmit={handleSearch}>
             <span className="search-icon">⌕</span>
 
             <input
@@ -455,10 +483,7 @@ function HomePage() {
               aria-label="Bus number"
             />
 
-            <button
-              type="submit"
-              className="search-button"
-            >
+            <button type="submit" className="search-button">
               Search Bus <span>→</span>
             </button>
           </form>
@@ -486,9 +511,7 @@ function HomePage() {
 
           <div className="hero-stats">
             <div>
-              <strong>
-                {loading ? "..." : buses.length}
-              </strong>
+              <strong>{loading ? "..." : buses.length}</strong>
               <span>Available buses</span>
             </div>
 
@@ -508,9 +531,7 @@ function HomePage() {
           <div className="visual-glow" />
 
           <div className="floating-card card-top">
-            <span className="floating-icon blue-icon">
-              ↗
-            </span>
+            <span className="floating-icon blue-icon">↗</span>
             <div>
               <small>Your journey</small>
               <strong>Find your bus easily</strong>
@@ -564,9 +585,7 @@ function HomePage() {
 
       {isPassenger && (
         <section className="passenger-trip-panel">
-          <span className="section-label">
-            YOUR ENROLLMENT
-          </span>
+          <span className="section-label">YOUR ENROLLMENT</span>
 
           {tripLoading ? (
             <p>Checking your active trip...</p>
@@ -574,8 +593,7 @@ function HomePage() {
             <>
               <h3>
                 Active Trip — Bus{" "}
-                {activeTrip.busId?.busNumber ||
-                  "Selected Bus"}
+                {activeTrip.busId?.busNumber || "Selected Bus"}
               </h3>
 
               <p>
@@ -587,9 +605,7 @@ function HomePage() {
               <p>
                 Enrolled at:{" "}
                 {activeTrip.enrolledAt
-                  ? new Date(
-                      activeTrip.enrolledAt
-                    ).toLocaleString()
+                  ? new Date(activeTrip.enrolledAt).toLocaleString()
                   : "Unavailable"}
               </p>
 
@@ -599,35 +615,25 @@ function HomePage() {
                 disabled={tripActionLoading}
                 onClick={handleEndTrip}
               >
-                {tripActionLoading
-                  ? "Please wait..."
-                  : "End My Trip"}
+                {tripActionLoading ? "Please wait..." : "End My Trip"}
               </button>
             </>
           ) : (
             <>
               <h3>No Active Trip</h3>
-              <p>
-                Select a bus below and click Join Trip.
-              </p>
+              <p>Select a bus below and click Join Trip.</p>
             </>
           )}
 
           {tripMessage && (
-            <p
-              role="status"
-              className="search-message"
-            >
+            <p role="status" className="search-message">
               {tripMessage}
             </p>
           )}
         </section>
       )}
 
-      <section
-        id="tracking"
-        className="tracking-section"
-      >
+      <section id="tracking" className="tracking-section">
         <div className="section-heading">
           <div>
             <span className="section-label">
@@ -641,9 +647,7 @@ function HomePage() {
 
           <span className="demo-badge">
             <span className="status-dot" />
-            {error
-              ? "CONNECTION ISSUE"
-              : "BUS INFORMATION"}
+            {error ? "CONNECTION ISSUE" : "BUS INFORMATION"}
           </span>
         </div>
 
@@ -651,9 +655,7 @@ function HomePage() {
           <div className="map-card">
             <div className="map-header">
               <div>
-                <span className="map-label">
-                  ROUTE OVERVIEW
-                </span>
+                <span className="map-label">ROUTE OVERVIEW</span>
                 <h3>Explore your route</h3>
               </div>
               <span className="map-pin-icon">⌖</span>
@@ -667,9 +669,7 @@ function HomePage() {
               <div className="dashboard-message">
                 <div className="loading-spinner" />
                 <h3>Loading bus information</h3>
-                <p>
-                  Connecting to the VeloCity database...
-                </p>
+                <p>Connecting to the VeloCity database...</p>
               </div>
             ) : error && !selectedBus ? (
               <div className="dashboard-message">
@@ -691,12 +691,8 @@ function HomePage() {
                   <div className="bus-symbol">▰</div>
 
                   <div>
-                    <span className="map-label">
-                      SELECTED BUS
-                    </span>
-                    <h3>
-                      Bus {selectedBus.busNumber}
-                    </h3>
+                    <span className="map-label">SELECTED BUS</span>
+                    <h3>Bus {selectedBus.busNumber}</h3>
                   </div>
 
                   <span
@@ -717,9 +713,7 @@ function HomePage() {
                 </div>
 
                 <div className="info-row">
-                  <div className="info-icon green-text">
-                    ◷
-                  </div>
+                  <div className="info-icon green-text">◷</div>
                   <div className="info-text">
                     <span>Current status</span>
                     <strong>{selectedBus.status}</strong>
@@ -727,9 +721,7 @@ function HomePage() {
                 </div>
 
                 <div className="info-row">
-                  <div className="info-icon orange-text">
-                    ⌖
-                  </div>
+                  <div className="info-icon orange-text">⌖</div>
                   <div className="info-text">
                     <span>GPS coordinates</span>
                     <strong>
@@ -773,14 +765,9 @@ function HomePage() {
         </div>
       </section>
 
-      <section
-        id="available"
-        className="features-section"
-      >
+      <section id="available" className="features-section">
         <div className="features-heading">
-          <span className="section-label">
-            AVAILABLE BUSES
-          </span>
+          <span className="section-label">AVAILABLE BUSES</span>
           <h2>Choose your bus.</h2>
           <p>
             Select a bus to view its route and current database status.
@@ -788,9 +775,7 @@ function HomePage() {
         </div>
 
         {loading ? (
-          <div className="empty-state">
-            Loading available buses...
-          </div>
+          <div className="empty-state">Loading available buses...</div>
         ) : error && buses.length === 0 ? (
           <div className="empty-state">
             Unable to load buses. Please check the backend.
@@ -806,38 +791,28 @@ function HomePage() {
           <div className="empty-state">
             <div className="empty-icon">▰</div>
             <h3>No buses added yet</h3>
-            <p>
-              Add a bus to your database to display it here.
-            </p>
+            <p>Add a bus to your database to display it here.</p>
           </div>
         ) : (
           <div className="feature-grid bus-list-grid">
             {buses.map((bus) => (
               <article
                 className={`feature-card bus-list-card ${
-                  selectedBus?._id === bus._id
-                    ? "bus-selected"
-                    : ""
+                  selectedBus?._id === bus._id ? "bus-selected" : ""
                 }`}
                 key={bus._id}
               >
                 <div className="bus-list-top">
-                  <div className="feature-icon icon-blue">
-                    ▰
-                  </div>
+                  <div className="feature-icon icon-blue">▰</div>
 
                   <span
-                    className={`demo-pill ${getStatusClass(
-                      bus.status
-                    )}`}
+                    className={`demo-pill ${getStatusClass(bus.status)}`}
                   >
                     {bus.status}
                   </span>
                 </div>
 
-                <span className="map-label">
-                  VELOCITY BUS
-                </span>
+                <span className="map-label">VELOCITY BUS</span>
                 <h3>Bus {bus.busNumber}</h3>
                 <p>{bus.route}</p>
 
@@ -878,14 +853,9 @@ function HomePage() {
         )}
       </section>
 
-      <section
-        id="features"
-        className="features-section features-extra"
-      >
+      <section id="features" className="features-section features-extra">
         <div className="features-heading">
-          <span className="section-label">
-            BUILT FOR PASSENGERS
-          </span>
+          <span className="section-label">BUILT FOR PASSENGERS</span>
           <h2>A better way to get there.</h2>
           <p>
             Features planned for a smarter public transport experience.
@@ -899,9 +869,7 @@ function HomePage() {
             <p>
               Follow a bus on a real map once GPS data is integrated.
             </p>
-            <span className="feature-link">
-              Planned feature ↗
-            </span>
+            <span className="feature-link">Planned feature ↗</span>
           </article>
 
           <article className="feature-card">
@@ -910,9 +878,7 @@ function HomePage() {
             <p>
               Estimate arrival times when route and live location data are available.
             </p>
-            <span className="feature-link">
-              Planned feature ↗
-            </span>
+            <span className="feature-link">Planned feature ↗</span>
           </article>
 
           <article className="feature-card">
@@ -921,9 +887,7 @@ function HomePage() {
             <p>
               Display passenger crowd levels when crowd reporting is connected.
             </p>
-            <span className="feature-link">
-              Planned feature ↗
-            </span>
+            <span className="feature-link">Planned feature ↗</span>
           </article>
 
           <article className="feature-card">
@@ -932,9 +896,7 @@ function HomePage() {
             <p>
               Expand route data to show stops, directions and destinations.
             </p>
-            <span className="feature-link">
-              Planned feature ↗
-            </span>
+            <span className="feature-link">Planned feature ↗</span>
           </article>
         </div>
       </section>
@@ -948,8 +910,7 @@ function HomePage() {
 
 function TrackingPage() {
   const [buses, setBuses] = useState([]);
-  const [selectedBusId, setSelectedBusId] =
-    useState("");
+  const [selectedBusId, setSelectedBusId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -962,9 +923,7 @@ function TrackingPage() {
       }
 
       const data = await response.json();
-      const busList = Array.isArray(data.buses)
-        ? data.buses
-        : [];
+      const busList = Array.isArray(data.buses) ? data.buses : [];
 
       setBuses(busList);
 
@@ -988,27 +947,19 @@ function TrackingPage() {
   useEffect(() => {
     fetchBuses();
 
-    const intervalId = setInterval(
-      fetchBuses,
-      REFRESH_INTERVAL
-    );
+    const intervalId = setInterval(fetchBuses, REFRESH_INTERVAL);
 
     return () => clearInterval(intervalId);
   }, [fetchBuses]);
 
   const selectedBus =
-    buses.find((bus) => bus._id === selectedBusId) ||
-    null;
+    buses.find((bus) => bus._id === selectedBusId) || null;
 
   return (
     <section className="portal-page">
-      <span className="section-label">
-        LIVE BUS INFORMATION
-      </span>
+      <span className="section-label">LIVE BUS INFORMATION</span>
       <h1>Bus Tracking</h1>
-      <p>
-        Select a bus to view its route and latest coordinates.
-      </p>
+      <p>Select a bus to view its route and latest coordinates.</p>
 
       {loading ? (
         <p>Loading buses...</p>
@@ -1024,15 +975,10 @@ function TrackingPage() {
           </button>
         </div>
       ) : buses.length === 0 ? (
-        <div className="portal-empty">
-          No buses available.
-        </div>
+        <div className="portal-empty">No buses available.</div>
       ) : (
         <>
-          <label
-            className="portal-select-label"
-            htmlFor="tracking-bus"
-          >
+          <label className="portal-select-label" htmlFor="tracking-bus">
             Select bus
           </label>
 
@@ -1040,15 +986,10 @@ function TrackingPage() {
             id="tracking-bus"
             className="portal-select"
             value={selectedBusId}
-            onChange={(event) =>
-              setSelectedBusId(event.target.value)
-            }
+            onChange={(event) => setSelectedBusId(event.target.value)}
           >
             {buses.map((bus) => (
-              <option
-                key={bus._id}
-                value={bus._id}
-              >
+              <option key={bus._id} value={bus._id}>
                 Bus {bus.busNumber} — {bus.route}
               </option>
             ))}
@@ -1057,9 +998,7 @@ function TrackingPage() {
           {selectedBus && (
             <>
               <div className="portal-bus-summary">
-                <strong>
-                  Bus {selectedBus.busNumber}
-                </strong>
+                <strong>Bus {selectedBus.busNumber}</strong>
                 <span>Route: {selectedBus.route}</span>
                 <span>Status: {selectedBus.status}</span>
                 <span>
@@ -1088,23 +1027,15 @@ function App() {
   const location = useLocation();
 
   const [user, setUser] = useState(getStoredUser);
-
-  // Sidebar is hidden by default.
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Light / dark theme
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem("velocity-theme");
-
     return savedTheme === "dark" ? "dark" : "light";
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute(
-      "data-theme",
-      theme
-    );
-
+    document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("velocity-theme", theme);
   }, [theme]);
 
@@ -1114,15 +1045,31 @@ function App() {
     );
   };
 
-  // Update user and close sidebar after route changes.
+  // Refresh stored user when navigating.
   useEffect(() => {
     setUser(getStoredUser());
     setSidebarOpen(false);
   }, [location.pathname]);
 
-  // Close sidebar with Escape key.
+  // Listen for login/logout events in the same browser tab.
   useEffect(() => {
-    if (!sidebarOpen) return;
+    const refreshUser = () => setUser(getStoredUser());
+
+    window.addEventListener("storage", refreshUser);
+    window.addEventListener("velocity-auth-changed", refreshUser);
+
+    return () => {
+      window.removeEventListener("storage", refreshUser);
+      window.removeEventListener(
+        "velocity-auth-changed",
+        refreshUser
+      );
+    };
+  }, []);
+
+  // Close sidebar with Escape.
+  useEffect(() => {
+    if (!sidebarOpen) return undefined;
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -1133,74 +1080,36 @@ function App() {
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [sidebarOpen]);
 
   const handleLogout = () => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
-
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
     setSidebarOpen(false);
     setUser(null);
 
+    window.dispatchEvent(new Event("velocity-auth-changed"));
     navigate("/", { replace: true });
   };
 
-  // Role-based default dashboard
-  const defaultPath =
-    user?.role === "Admin"
-      ? "/admin"
-      : user?.role === "Driver"
-      ? "/driver"
-      : user?.role === "Conductor"
-      ? "/conductor"
-      : "/home";
+  const defaultPath = getDashboardPath(user);
 
   return (
     <Routes>
       {/* PUBLIC ROUTES */}
 
-      <Route
-        path="/"
-        element={<RoleSelection />}
-      />
-
-      <Route
-        path="/login"
-        element={<Login />}
-      />
-
-      <Route
-        path="/signup"
-        element={<Signup />}
-      />
-
-      <Route
-        path="/admin/login"
-        element={<Login />}
-      />
-
-      <Route
-        path="/conductor/login"
-        element={<Login />}
-      />
-
-      <Route
-        path="/driver/signup"
-        element={<DriverSignup />}
-      />
-
-      <Route
-        path="/driver/login"
-        element={<DriverLogin />}
-      />
+      <Route path="/" element={<RoleSelection />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/admin/login" element={<Login />} />
+      <Route path="/conductor/login" element={<Login />} />
+      <Route path="/driver/signup" element={<DriverSignup />} />
+      <Route path="/driver/login" element={<DriverLogin />} />
 
       {/* PROTECTED APP LAYOUT */}
 
@@ -1209,8 +1118,6 @@ function App() {
         element={
           <ProtectedRoute>
             <div className="portal-layout">
-              {/* SIDEBAR BACKDROP */}
-
               <button
                 type="button"
                 className={`portal-sidebar-backdrop ${
@@ -1221,8 +1128,6 @@ function App() {
                 tabIndex={sidebarOpen ? 0 : -1}
                 onClick={() => setSidebarOpen(false)}
               />
-
-              {/* SIDEBAR */}
 
               <aside
                 id="velocity-sidebar"
@@ -1238,18 +1143,13 @@ function App() {
                   tabIndex={sidebarOpen ? 0 : -1}
                 >
                   <span className="portal-logo">V</span>
-
                   <span className="portal-brand-text">
                     Velo<strong>City</strong>
                     <small>SMART TRANSIT</small>
                   </span>
                 </NavLink>
 
-                <p className="portal-menu-title">
-                  MAIN MENU
-                </p>
-
-                {/* ROLE-BASED NAVIGATION */}
+                <p className="portal-menu-title">MAIN MENU</p>
 
                 <nav className="portal-nav">
                   {menuItems
@@ -1261,9 +1161,7 @@ function App() {
                         key={item.path}
                         to={item.path}
                         end={item.end}
-                        onClick={() =>
-                          setSidebarOpen(false)
-                        }
+                        onClick={() => setSidebarOpen(false)}
                         tabIndex={sidebarOpen ? 0 : -1}
                         className={({ isActive }) =>
                           `portal-nav-link ${
@@ -1274,38 +1172,27 @@ function App() {
                         <span className="portal-nav-icon">
                           {item.icon}
                         </span>
-
                         <span>{item.label}</span>
                       </NavLink>
                     ))}
                 </nav>
 
-                {/* SIDEBAR FOOTER */}
-
                 <div className="portal-sidebar-footer">
                   <span className="portal-online-dot" />
                   <span>VeloCity</span>
-
-                  <small>
-                    {user?.firstName || user?.role}
-                  </small>
+                  <small>{user?.firstName || user?.role}</small>
 
                   <button
                     type="button"
                     className="search-button"
                     onClick={handleLogout}
                     tabIndex={sidebarOpen ? 0 : -1}
-                    style={{
-                      marginTop: "12px",
-                      width: "100%",
-                    }}
+                    style={{ marginTop: "12px", width: "100%" }}
                   >
                     Logout
                   </button>
                 </div>
               </aside>
-
-              {/* MAIN CONTENT */}
 
               <div className="portal-main">
                 <header className="portal-topbar">
@@ -1316,9 +1203,7 @@ function App() {
                       setSidebarOpen((open) => !open)
                     }
                     aria-label={
-                      sidebarOpen
-                        ? "Close menu"
-                        : "Open menu"
+                      sidebarOpen ? "Close menu" : "Open menu"
                     }
                     aria-expanded={sidebarOpen}
                     aria-controls="velocity-sidebar"
@@ -1327,10 +1212,7 @@ function App() {
                   </button>
 
                   <div className="portal-topbar-title">
-                    <span>
-                      VELOCITY • SMART TRANSPORT
-                    </span>
-
+                    <span>VELOCITY • SMART TRANSPORT</span>
                     <h2>Welcome to VeloCity</h2>
                   </div>
 
@@ -1346,11 +1228,8 @@ function App() {
                     <span className="theme-toggle-icon">
                       {theme === "light" ? "🌙" : "☀️"}
                     </span>
-
                     <span className="theme-toggle-label">
-                      {theme === "light"
-                        ? "Dark Mode"
-                        : "Light Mode"}
+                      {theme === "light" ? "Dark Mode" : "Light Mode"}
                     </span>
                   </button>
 
@@ -1359,18 +1238,20 @@ function App() {
                   </span>
                 </header>
 
-                {/* NESTED ROUTES */}
-
                 <main className="portal-content">
                   <Routes>
+                    <Route
+                      path="/"
+                      element={
+                        <Navigate to={defaultPath} replace />
+                      }
+                    />
+
                     <Route
                       path="/home"
                       element={
                         <ProtectedRoute
-                          allowedRoles={[
-                            "Passenger",
-                            "Admin",
-                          ]}
+                          allowedRoles={["Passenger", "Admin"]}
                         >
                           <HomePage />
                         </ProtectedRoute>
@@ -1381,10 +1262,7 @@ function App() {
                       path="/tracking"
                       element={
                         <ProtectedRoute
-                          allowedRoles={[
-                            "Passenger",
-                            "Admin",
-                          ]}
+                          allowedRoles={["Passenger", "Admin"]}
                         >
                           <TrackingPage />
                         </ProtectedRoute>
@@ -1394,9 +1272,7 @@ function App() {
                     <Route
                       path="/assign-driver"
                       element={
-                        <ProtectedRoute
-                          allowedRoles={["Admin"]}
-                        >
+                        <ProtectedRoute allowedRoles={["Admin"]}>
                           <DriverAssignment />
                         </ProtectedRoute>
                       }
@@ -1405,9 +1281,7 @@ function App() {
                     <Route
                       path="/driver"
                       element={
-                        <ProtectedRoute
-                          allowedRoles={["Driver"]}
-                        >
+                        <ProtectedRoute allowedRoles={["Driver"]}>
                           <DriverDashboard />
                         </ProtectedRoute>
                       }
@@ -1416,9 +1290,7 @@ function App() {
                     <Route
                       path="/conductor"
                       element={
-                        <ProtectedRoute
-                          allowedRoles={["Conductor"]}
-                        >
+                        <ProtectedRoute allowedRoles={["Conductor"]}>
                           <ConductorDashboard />
                         </ProtectedRoute>
                       }
@@ -1427,9 +1299,7 @@ function App() {
                     <Route
                       path="/admin"
                       element={
-                        <ProtectedRoute
-                          allowedRoles={["Admin"]}
-                        >
+                        <ProtectedRoute allowedRoles={["Admin"]}>
                           <AdminDashboard />
                         </ProtectedRoute>
                       }
@@ -1438,23 +1308,16 @@ function App() {
                     <Route
                       path="/admin/add-bus"
                       element={
-                        <ProtectedRoute
-                          allowedRoles={["Admin"]}
-                        >
+                        <ProtectedRoute allowedRoles={["Admin"]}>
                           <AddBus />
                         </ProtectedRoute>
                       }
                     />
 
-                    {/* Unknown path goes to the user's dashboard */}
-
                     <Route
                       path="*"
                       element={
-                        <Navigate
-                          to={defaultPath}
-                          replace
-                        />
+                        <Navigate to={defaultPath} replace />
                       }
                     />
                   </Routes>

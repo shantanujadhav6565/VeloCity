@@ -71,7 +71,9 @@ export default function Signup() {
         throw new Error(data.message || "Signup failed.");
       }
 
-      setMessage("Account created successfully! Redirecting to Login...");
+      setMessage(
+        "Account created successfully! Redirecting to Login..."
+      );
 
       setTimeout(() => {
         navigate("/login", {

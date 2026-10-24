@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Login.css";
@@ -52,7 +51,9 @@ export default function Login() {
       }
 
       if (!data.token || !data.user) {
-        throw new Error("Invalid response received from server.");
+        throw new Error(
+          "Invalid response received from server."
+        );
       }
 
       const role = data.user.role;
@@ -61,13 +62,14 @@ export default function Login() {
       console.log("Logged-in role:", role);
       console.log("Login page:", location.pathname);
 
-      // Admin login accepts Admin accounts only.
+      // Validate the role for dedicated login pages.
       if (isAdminLogin && role !== "Admin") {
-        setError("Access denied. Please use an Admin account.");
+        setError(
+          "Access denied. Please use an Admin account."
+        );
         return;
       }
 
-      // Conductor login accepts Conductor accounts only.
       if (isConductorLogin && role !== "Conductor") {
         setError(
           "Access denied. Please use a Conductor account."
@@ -75,38 +77,44 @@ export default function Login() {
         return;
       }
 
-      // Clear any previous session in this tab.
+      // Only allow recognized roles to log in.
+      const dashboardPaths = {
+        Admin: "/admin",
+        Driver: "/driver",
+        Passenger: "/home",
+        Conductor: "/conductor",
+      };
+
+      const destination = dashboardPaths[role];
+
+      if (!destination) {
+        setError("Your account role is not recognized.");
+        return;
+      }
+
+      // Remove stale login details from both storage locations.
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("user");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
 
-      // Save login details in this tab's session.
+      // Save the new login consistently in sessionStorage.
       sessionStorage.setItem("token", data.token);
-      sessionStorage.setItem("user", JSON.stringify(data.user));
+      sessionStorage.setItem(
+        "user",
+        JSON.stringify(data.user)
+      );
 
-      // Redirect according to the logged-in user's role.
-      switch (role) {
-        case "Admin":
-          navigate("/admin", { replace: true });
-          break;
+      // Notify App.jsx that authentication state has changed.
+      window.dispatchEvent(
+        new Event("velocity-auth-changed")
+      );
 
-        case "Driver":
-          navigate("/driver", { replace: true });
-          break;
-
-        case "Passenger":
-          navigate("/home", { replace: true });
-          break;
-
-        case "Conductor":
-          navigate("/conductor", { replace: true });
-          break;
-
-        default:
-          sessionStorage.removeItem("token");
-          sessionStorage.removeItem("user");
-          setError("Your account role is not recognized.");
-      }
+      // Redirect according to the role returned by the backend.
+      navigate(destination, { replace: true });
     } catch (err) {
+      console.error("Login error:", err);
+
       if (err instanceof TypeError) {
         setError(
           "Cannot connect to the server. Please check whether the backend is running."
@@ -148,7 +156,9 @@ export default function Login() {
             type="text"
             placeholder="Enter your first name"
             value={firstName}
-            onChange={(event) => setFirstName(event.target.value)}
+            onChange={(event) =>
+              setFirstName(event.target.value)
+            }
             autoComplete="given-name"
             required
           />
@@ -160,7 +170,9 @@ export default function Login() {
             type="password"
             placeholder="Enter your password"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) =>
+              setPassword(event.target.value)
+            }
             autoComplete="current-password"
             required
           />

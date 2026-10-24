@@ -87,6 +87,37 @@ const tripHistorySchema = new mongoose.Schema(
   { _id: true }
 );
 
+// Records the conductor's manual crowd corrections.
+const manualCrowdUpdateSchema = new mongoose.Schema(
+  {
+    passengerCount: {
+      type: Number,
+      required: true,
+      min: [0, "Passenger count cannot be negative"],
+      validate: {
+        validator: Number.isInteger,
+        message: "Passenger count must be a whole number",
+      },
+    },
+    reason: {
+      type: String,
+      trim: true,
+      maxlength: [300, "Reason cannot exceed 300 characters"],
+      default: "",
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
+
 const busSchema = new mongoose.Schema(
   {
     busNumber: {
@@ -119,7 +150,7 @@ const busSchema = new mongoose.Schema(
       default: "",
     },
 
-    // Admin can change capacity when creating or editing a bus.
+    // Admin configures the maximum passenger capacity.
     capacity: {
       type: Number,
       default: 50,
@@ -160,7 +191,7 @@ const busSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Will reference the Conductor model added in a later step.
+    // Reference to the assigned conductor profile.
     assignedConductor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Conductor",
@@ -230,7 +261,8 @@ const busSchema = new mongoose.Schema(
       default: [],
     },
 
-    // Crowd occupancy for the current trip.
+    // Current onboard passenger count.
+    // Ticket routes will update this in a later step.
     currentPassengerCount: {
       type: Number,
       default: 0,
@@ -241,13 +273,27 @@ const busSchema = new mongoose.Schema(
       },
     },
 
-    // Updated when occupancy or the current stop changes.
+    // Last time the crowd count was updated.
     crowdLastUpdated: {
       type: Date,
       default: null,
     },
 
-    // Current stop index refers to routeStops[].sequence.
+    // "tickets" means calculated from issued tickets.
+    // "manual" means corrected by the conductor.
+    crowdUpdateMode: {
+      type: String,
+      enum: ["tickets", "manual"],
+      default: "tickets",
+    },
+
+    // Most recent manual correction, if any.
+    manualCrowdUpdate: {
+      type: manualCrowdUpdateSchema,
+      default: null,
+    },
+
+    // Current stop sequence refers to routeStops[].sequence.
     currentStopSequence: {
       type: Number,
       default: null,
@@ -270,7 +316,7 @@ const busSchema = new mongoose.Schema(
   }
 );
 
-// Derived crowd information: it is not stored separately in MongoDB.
+// Derived crowd information; these values are not stored separately.
 busSchema.virtual("availableSeats").get(function () {
   return Math.max(this.capacity - this.currentPassengerCount, 0);
 });

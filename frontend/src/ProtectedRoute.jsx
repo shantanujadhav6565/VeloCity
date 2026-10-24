@@ -7,9 +7,13 @@ export default function ProtectedRoute({
 }) {
   const location = useLocation();
 
-  // Pratyek tab chi independent login session
-  const token = sessionStorage.getItem("token");
-  const savedUser = sessionStorage.getItem("user");
+  const token =
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("token");
+
+  const savedUser =
+    sessionStorage.getItem("user") ||
+    localStorage.getItem("user");
 
   let user = null;
 
@@ -18,9 +22,10 @@ export default function ProtectedRoute({
   } catch {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   }
 
-  // Login nasel tar login page var pathva
   if (!token || !user || !user.role) {
     return (
       <Navigate
@@ -31,21 +36,26 @@ export default function ProtectedRoute({
     );
   }
 
-  // User role nusar access check kara
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    if (user.role === "Admin") {
-      return <Navigate to="/admin" replace />;
-    }
+  const dashboardPaths = {
+    Admin: "/admin",
+    Driver: "/driver",
+    Conductor: "/conductor",
+    Passenger: "/home",
+  };
 
-    if (user.role === "Driver") {
-      return <Navigate to="/driver" replace />;
-    }
+  if (
+    allowedRoles &&
+    !allowedRoles.includes(user.role)
+  ) {
+    const correctPath = dashboardPaths[user.role] || "/login";
 
-    if (user.role === "Passenger") {
-      return <Navigate to="/home" replace />;
-    }
-
-    return <Navigate to="/" replace />;
+    return (
+      <Navigate
+        to={correctPath}
+        replace
+        state={{ from: location }}
+      />
+    );
   }
 
   return children;
