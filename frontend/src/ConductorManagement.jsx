@@ -25,11 +25,12 @@ export default function ConductorManagement() {
       const [requestData, conductorData, busData] = await Promise.all([requestResponse.json(), conductorResponse.json(), busResponse.json()]);
       if (!requestResponse.ok || !conductorResponse.ok || !busResponse.ok) throw new Error(requestData.message || conductorData.message || busData.message || "Unable to load conductor management data.");
       setRequests(requestData.requests || []); setConductors(conductorData.conductors || []); setBuses(busData.buses || []);
-      setAssignments((previous) => {
-        const next = { ...previous };
-        (busData.buses || []).forEach((bus) => { if (next[bus._id] === undefined) next[bus._id] = bus.assignedConductor?._id || bus.assignedConductor || ""; });
-        return next;
-      });
+      setAssignments(Object.fromEntries(
+        (busData.buses || []).map((bus) => [
+          bus._id,
+          bus.assignedConductor?._id || bus.assignedConductor || "",
+        ])
+      ));
     } catch (err) { setError(err.message || "Unable to load conductor data."); }
   }, []);
 
@@ -77,8 +78,8 @@ export default function ConductorManagement() {
     </section>
     <section className="admin-request-list"><h3>Bus and Conductor Assignments</h3>
       {buses.map((bus) => <article className="admin-request-card" key={bus._id}><div className="admin-request-card-header"><div><h3>Bus {bus.busNumber}</h3><p>{bus.route} · {bus.tripStatus}</p></div></div>
-        <label htmlFor={`bus-conductor-${bus._id}`}>Assigned Conductor</label><select id={`bus-conductor-${bus._id}`} value={assignments[bus._id] || ""} onChange={(event) => setAssignments((value) => ({ ...value, [bus._id]: event.target.value }))}><option value="">Unassigned</option>{conductors.map((conductor) => <option key={conductor._id} value={conductor._id}>{conductor.name} ({conductor.conductorCode})</option>)}</select>
-        <button className="admin-btn admin-btn-primary" onClick={() => assign(bus)} disabled={Boolean(busy)}>{busy === bus._id ? "Saving..." : "Save Assignment"}</button>
+        <label htmlFor={`bus-conductor-${bus._id}`}>Assigned Conductor</label><select id={`bus-conductor-${bus._id}`} value={assignments[bus._id] || ""} onChange={(event) => setAssignments((value) => ({ ...value, [bus._id]: event.target.value }))} disabled={bus.tripStatus === "In Progress" || Boolean(busy)}><option value="">Unassigned</option>{conductors.map((conductor) => <option key={conductor._id} value={conductor._id}>{conductor.name} ({conductor.conductorCode})</option>)}</select>
+        <button className="admin-btn admin-btn-primary" onClick={() => assign(bus)} disabled={bus.tripStatus === "In Progress" || Boolean(busy)}>{busy === bus._id ? "Saving..." : bus.tripStatus === "In Progress" ? "Trip in Progress" : "Save Assignment"}</button>
       </article>)}
       {buses.length === 0 && <p className="admin-empty-state">No buses are configured.</p>}
     </section>

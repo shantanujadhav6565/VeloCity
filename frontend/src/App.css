@@ -5,10 +5,8 @@
    1. GLOBAL STYLES
 ========================================= */
 
-:root {
+html {
   font-family: "DM Sans", sans-serif;
-  color: #14213d;
-  background: #f5f8fc;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -16,32 +14,6 @@
   font-optical-sizing: auto;
   scroll-behavior: smooth;
 
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-light: #eff6ff;
-
-  --secondary: #0d9488;
-  --secondary-light: #e6fffa;
-
-  --navy: #101c35;
-  --text: #14213d;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --surface: #ffffff;
-  --page-bg: #f5f8fc;
-
-  --success: #059669;
-  --warning: #d97706;
-  --danger: #dc2626;
-
-  --radius: 18px;
-  --radius-sm: 12px;
-
-  --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.04);
-  --shadow: 0 12px 32px rgba(15, 35, 70, 0.07);
-  --shadow-lg: 0 22px 55px rgba(15, 35, 70, 0.12);
-
-  --transition: 0.25s ease;
 }
 
 * {
@@ -3427,40 +3399,6 @@ textarea:disabled {
 
 
 /* =========================================
-   23. LIGHT / DARK THEME VARIABLES
-========================================= */
-
-:root,
-[data-theme="light"] {
-  color-scheme: light;
-
-  --page-bg: #f4f7fb;
-  --surface: #ffffff;
-  --surface-soft: #f5f8fc;
-  --text-primary: #15243a;
-  --text-secondary: #687991;
-  --border-color: #e2e9f2;
-  --input-bg: #ffffff;
-  --topbar-bg: rgba(255, 255, 255, 0.96);
-  --shadow-color: rgba(24, 45, 75, 0.08);
-}
-
-[data-theme="dark"] {
-  color-scheme: dark;
-
-  --page-bg: #0b1220;
-  --surface: #111c2e;
-  --surface-soft: #17243a;
-  --text-primary: #edf4ff;
-  --text-secondary: #a5b4ca;
-  --border-color: #2b3a51;
-  --input-bg: #17243a;
-  --topbar-bg: rgba(17, 28, 46, 0.96);
-  --shadow-color: rgba(0, 0, 0, 0.22);
-}
-
-
-/* =========================================
    24. THEME TRANSITIONS
 ========================================= */
 
@@ -3829,14 +3767,14 @@ select:focus,
 ========================================= */
 
 .welcome-page {
-  --welcome-bg: #f4f7fc;
-  --welcome-card: #ffffff;
-  --welcome-text: #172b4d;
-  --welcome-muted: #64748b;
-  --welcome-border: #dce5f1;
-  --welcome-blue: #2864ed;
-  --welcome-blue-hover: #174fd0;
-  --welcome-teal: #0d9488;
+  --welcome-bg: var(--vc-page);
+  --welcome-card: var(--vc-surface);
+  --welcome-text: var(--vc-text);
+  --welcome-muted: var(--vc-muted);
+  --welcome-border: var(--vc-border);
+  --welcome-blue: var(--vc-brand);
+  --welcome-blue-hover: var(--vc-brand-strong);
+  --welcome-teal: var(--vc-success);
 
   min-height: 100vh;
   min-height: 100dvh;
@@ -3856,31 +3794,6 @@ select:focus,
     var(--welcome-bg);
   transition: background 0.25s ease, color 0.25s ease;
 }
-
-html[data-theme="dark"] .welcome-page {
-  --welcome-bg: #0b1220;
-  --welcome-card: #111c2e;
-  --welcome-text: #edf4ff;
-  --welcome-muted: #a5b4ca;
-  --welcome-border: #2b3a51;
-  --welcome-blue: #5b8cff;
-  --welcome-blue-hover: #7aa2ff;
-  --welcome-teal: #2dd4bf;
-
-  background:
-    radial-gradient(
-      circle at 8% 8%,
-      rgba(59, 110, 255, 0.16),
-      transparent 32%
-    ),
-    radial-gradient(
-      circle at 92% 88%,
-      rgba(13, 148, 136, 0.10),
-      transparent 30%
-    ),
-    var(--welcome-bg);
-}
-
 
 /* =========================================
    36. WELCOME TOPBAR & BRAND
@@ -4035,10 +3948,6 @@ html[data-theme="dark"] .welcome-page {
     box-shadow 0.22s ease, background 0.22s ease;
 }
 
-html[data-theme="dark"] .welcome-role-card {
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
-}
-
 .welcome-role-card:hover,
 .welcome-role-card.role-selected {
   transform: translateY(-5px);
@@ -4070,21 +3979,6 @@ html[data-theme="dark"] .welcome-role-card {
 .admin-icon {
   color: #7048c7;
   background: #f0eaff;
-}
-
-html[data-theme="dark"] .passenger-icon {
-  color: #91b3ff;
-  background: #20365f;
-}
-
-html[data-theme="dark"] .driver-icon {
-  color: #6ee7b7;
-  background: #163b35;
-}
-
-html[data-theme="dark"] .admin-icon {
-  color: #c4b5fd;
-  background: #332751;
 }
 
 .welcome-role-card h2 {
@@ -4158,10 +4052,6 @@ html[data-theme="dark"] .admin-icon {
 .welcome-admin-btn {
   color: #ffffff;
   background: #172b4d;
-}
-
-html[data-theme="dark"] .welcome-admin-btn {
-  background: #30486f;
 }
 
 .welcome-admin-btn:hover {
@@ -4436,20 +4326,6 @@ html[data-theme="dark"] .welcome-admin-btn {
   transition: background 0.25s ease, color 0.25s ease;
 }
 
-html[data-theme="dark"] .login-page {
-  --login-bg: #0b1220;
-  --login-card: #131e32;
-  --login-text: #f0f5ff;
-  --login-muted: #a3b2c9;
-  --login-label: #d4deee;
-  --login-border: #293750;
-  --login-input-bg: #0d1729;
-  --login-primary: #4b80ff;
-  --login-primary-hover: #6994ff;
-  --login-shadow: rgba(0, 0, 0, 0.3);
-  --login-footer: #8192ad;
-}
-
 .login-card {
   width: 100%;
   max-width: 430px;
@@ -4601,18 +4477,6 @@ html[data-theme="dark"] .login-page {
   line-height: 1.6;
 }
 
-html[data-theme="dark"] .login-error {
-  background: #401f2a;
-  border-color: #713443;
-  color: #fda4af;
-}
-
-html[data-theme="dark"] .signup-success {
-  background: #10372f;
-  border-color: #22634f;
-  color: #86efc2;
-}
-
 .login-footer {
   margin: 26px 0 0;
   color: var(--login-footer);
@@ -4711,22 +4575,6 @@ html[data-theme="dark"] .signup-success {
   box-shadow: 0 10px 30px var(--panel-shadow);
 
   transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease;
-}
-
-html[data-theme="dark"] .info-panel {
-  --panel-bg: #131e32;
-  --panel-text: #f0f5ff;
-  --panel-muted: #a3b2c9;
-  --panel-border: #293750;
-  --panel-form-bg: #0d1729;
-  --panel-input-bg: #111d31;
-  --panel-input-text: #f0f5ff;
-  --panel-disabled-bg: #202d43;
-  --panel-button: #4b80ff;
-  --panel-button-hover: #6994ff;
-  --panel-secondary-bg: #26354d;
-  --panel-secondary-text: #e0e9f8;
-  --panel-shadow: rgba(0, 0, 0, 0.22);
 }
 
 .info-panel h2,
@@ -4875,18 +4723,6 @@ html[data-theme="dark"] .info-panel {
   color: #b91c1c;
 }
 
-html[data-theme="dark"] .info-panel [role="status"] {
-  background: #10372f;
-  border-color: #22634f;
-  color: #86efc2;
-}
-
-html[data-theme="dark"] .info-panel [role="alert"] {
-  background: #401f2a;
-  border-color: #713443;
-  color: #fda4af;
-}
-
 .info-panel hr {
   margin: 30px 0;
   border: 0;
@@ -4976,15 +4812,6 @@ html[data-theme="dark"] .info-panel [role="alert"] {
   color: var(--admin-text);
   font-family: "Inter", "Segoe UI", Arial, sans-serif;
   transition: background 0.25s ease, color 0.25s ease;
-}
-
-html[data-theme="dark"] .admin-page {
-  --admin-bg: #0b1220;
-  --admin-card: #131e32;
-  --admin-text: #f0f5ff;
-  --admin-muted: #a3b2c9;
-  --admin-border: #293750;
-  --admin-shadow: 0 8px 26px rgba(0, 0, 0, 0.2);
 }
 
 .admin-header {
@@ -5241,18 +5068,6 @@ html[data-theme="dark"] .admin-page {
   background: #fee2e2;
   border: 1px solid #fecaca;
   color: #991b1b;
-}
-
-html[data-theme="dark"] .admin-success {
-  background: #10372f;
-  border-color: #22634f;
-  color: #86efc2;
-}
-
-html[data-theme="dark"] .admin-error {
-  background: #401f2a;
-  border-color: #713443;
-  color: #fda4af;
 }
 
 .admin-empty {
@@ -5724,40 +5539,6 @@ body {
 .welcome-page #how-it-works,
 .welcome-page #benefits {
   scroll-margin-top: calc(var(--nav-height) + 12px);
-}
-
-/* DARK MODE */
-html[data-theme="dark"] .welcome-page .welcome-topbar {
-  background: rgba(11, 24, 44, 0.96);
-  border-bottom-color: #243955;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.22);
-}
-
-html[data-theme="dark"] .welcome-page .welcome-brand {
-  color: #f1f6ff;
-}
-
-html[data-theme="dark"] .welcome-page .welcome-brand-text small {
-  color: #a9bedc;
-}
-
-html[data-theme="dark"] .welcome-page .welcome-nav a {
-  color: #c0d1eb;
-}
-
-html[data-theme="dark"] .welcome-page .welcome-nav a:hover,
-html[data-theme="dark"] .welcome-page .welcome-nav a.active {
-  color: #76a8ff;
-}
-
-html[data-theme="dark"] .welcome-page .welcome-nav a::after {
-  background: #76a8ff;
-}
-
-html[data-theme="dark"] .welcome-page .welcome-theme-toggle {
-  color: #e5edff;
-  background: #172b49;
-  border-color: #344c6d;
 }
 
 /* TABLET */

@@ -352,12 +352,12 @@ export default function DriverAssignment() {
 
         <button
           type="button"
+          className="assignment-refresh-button"
           onClick={() => {
             setMessage("");
             loadData();
           }}
           disabled={loading || saving}
-          style={{ marginLeft: "10px" }}
         >
           Refresh
         </button>

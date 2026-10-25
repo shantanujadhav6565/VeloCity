@@ -25,6 +25,34 @@ const authorize = require("./middleware/authorize");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+function httpError(status, message) {
+  return Object.assign(new Error(message), { status });
+}
+
+async function syncConductorAvailability(conductorId, session) {
+  if (!conductorId) return null;
+
+  const conductor = await Conductor.findById(conductorId).session(session);
+  if (!conductor || conductor.status === "Inactive") return conductor?.status || null;
+
+  const assignment = await Bus.exists({ assignedConductor: conductorId }).session(session);
+  conductor.status = assignment ? "On Duty" : "Available";
+  await conductor.save({ session });
+  return conductor.status;
+}
+
+async function syncDriverAvailability(driverId, session) {
+  if (!driverId) return null;
+
+  const driver = await Driver.findById(driverId).session(session);
+  if (!driver || driver.status === "Inactive") return driver?.status || null;
+
+  const assignment = await Bus.exists({ assignedDriver: driverId }).session(session);
+  driver.status = assignment ? "On Duty" : "Available";
+  await driver.save({ session });
+  return driver.status;
+}
+
 // ==================================================
 // MIDDLEWARE
 // ==================================================
@@ -396,52 +424,154 @@ app.patch(
   }
 );
 
-// ADMIN: assign or replace an approved Conductor for a bus.
-app.patch("/api/buses/:id/assign-conductor", authenticate, authorize("Admin"), async (req, res) => {
-  try {
+// ADMIN: assign or replace an approved, available Conductor for a bus.
+app.patch(
+  "/api/buses/:id/assign-conductor",
+  authenticate,
+  authorize("Admin"),
+  async (req, res) => {
     const { id } = req.params;
-    const { conductorId } = req.body;
-    if (!mongoose.isValidObjectId(id) || !mongoose.isValidObjectId(conductorId)) return res.status(400).json({ success: false, message: "Valid bus ID and conductorId are required" });
-    const [bus, conductor] = await Promise.all([Bus.findById(id), Conductor.findById(conductorId)]);
-    if (!bus) return res.status(404).json({ success: false, message: "Bus not found" });
-    if (!conductor || conductor.status === "Inactive") return res.status(404).json({ success: false, message: "Available Conductor not found" });
-    if (bus.tripStatus === "In Progress") return res.status(409).json({ success: false, message: "Cannot change assignment during an active trip" });
-    const linkedUser = await User.findOne({ conductor: conductor._id, role: "Conductor", approvalStatus: "Approved", isActive: true });
-    if (!linkedUser) return res.status(409).json({ success: false, message: "Conductor must have an approved active login" });
-    const otherBus = await Bus.findOne({ assignedConductor: conductor._id, _id: { $ne: bus._id } });
-    if (otherBus) return res.status(409).json({ success: false, message: "This Conductor is already assigned to another bus" });
-    if (bus.assignedConductor && bus.assignedConductor.toString() !== conductor._id.toString()) await Conductor.findByIdAndUpdate(bus.assignedConductor, { status: "Available" });
-    bus.assignedConductor = conductor._id;
-    bus.tripStatus = "Not Started";
-    bus.tripStartedAt = null;
-    bus.tripEndedAt = null;
-    await bus.save();
-    conductor.status = "On Duty";
-    await conductor.save();
-    const updatedBus = await Bus.findById(bus._id).populate("assignedConductor", "conductorCode name status");
-    return res.json({ success: true, message: "Conductor assigned successfully", bus: updatedBus });
-  } catch (error) {
-    console.error("Assign Conductor error:", error.message);
-    return res.status(500).json({ success: false, message: "Failed to assign Conductor" });
-  }
-});
+    const conductorId = req.body?.conductorId;
 
-app.delete("/api/buses/:id/assign-conductor", authenticate, authorize("Admin"), async (req, res) => {
-  try {
-    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: "Invalid bus ID" });
-    const bus = await Bus.findById(req.params.id);
-    if (!bus) return res.status(404).json({ success: false, message: "Bus not found" });
-    if (bus.tripStatus === "In Progress") return res.status(409).json({ success: false, message: "End the active trip before unassigning the Conductor" });
-    const previousId = bus.assignedConductor;
-    bus.assignedConductor = null;
-    await bus.save();
-    if (previousId) await Conductor.findByIdAndUpdate(previousId, { status: "Available" });
-    return res.json({ success: true, message: "Conductor assignment removed", bus });
-  } catch (error) {
-    console.error("Unassign Conductor error:", error.message);
-    return res.status(500).json({ success: false, message: "Failed to remove Conductor assignment" });
+    if (!mongoose.isValidObjectId(id) || !mongoose.isValidObjectId(conductorId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid bus ID and conductorId are required",
+      });
+    }
+
+    const session = await mongoose.startSession();
+    let updatedBus;
+
+    try {
+      await session.withTransaction(async () => {
+        const bus = await Bus.findById(id).session(session);
+        if (!bus) throw httpError(404, "Bus not found");
+        if (bus.tripStatus === "In Progress") {
+          throw httpError(409, "Cannot change assignment during an active trip");
+        }
+
+        const conductor = await Conductor.findById(conductorId).session(session);
+        if (!conductor || conductor.status === "Inactive") {
+          throw httpError(404, "Available Conductor not found");
+        }
+
+        const linkedUser = await User.findOne({
+          conductor: conductor._id,
+          role: "Conductor",
+          approvalStatus: "Approved",
+          isActive: true,
+        }).session(session);
+        if (!linkedUser) {
+          throw httpError(409, "Conductor must have an approved active login");
+        }
+
+        const alreadyAssignedHere =
+          bus.assignedConductor?.toString() === conductor._id.toString();
+        if (alreadyAssignedHere) {
+          updatedBus = await Bus.findById(bus._id)
+            .populate("assignedDriver", "driverCode name status")
+            .populate("assignedConductor", "conductorCode name status")
+            .session(session);
+          return;
+        }
+
+        if (conductor.status !== "Available") {
+          throw httpError(409, "This Conductor is not available for assignment");
+        }
+
+        const otherBus = await Bus.findOne({
+          assignedConductor: conductor._id,
+          _id: { $ne: bus._id },
+        }).session(session);
+        if (otherBus) {
+          throw httpError(409, "This Conductor is already assigned to another bus");
+        }
+
+        const previousConductorId = bus.assignedConductor;
+        bus.assignedConductor = conductor._id;
+        bus.tripStatus = "Not Started";
+        bus.tripStartedAt = null;
+        // Keep the latest completion timestamp and tripHistory until the next trip starts.
+        await bus.save({ session });
+
+        if (previousConductorId) {
+          await syncConductorAvailability(previousConductorId, session);
+        }
+
+        conductor.status = "On Duty";
+        await conductor.save({ session });
+
+        updatedBus = await Bus.findById(bus._id)
+          .populate("assignedDriver", "driverCode name status")
+          .populate("assignedConductor", "conductorCode name status")
+          .session(session);
+      });
+
+      return res.json({
+        success: true,
+        message: "Conductor assigned successfully",
+        bus: updatedBus,
+      });
+    } catch (error) {
+      console.error("Assign Conductor error:", error.message);
+      return res.status(error.status || 500).json({
+        success: false,
+        message: error.message || "Failed to assign Conductor",
+      });
+    } finally {
+      await session.endSession();
+    }
   }
-});
+);
+
+app.delete(
+  "/api/buses/:id/assign-conductor",
+  authenticate,
+  authorize("Admin"),
+  async (req, res) => {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ success: false, message: "Invalid bus ID" });
+    }
+
+    const session = await mongoose.startSession();
+    let updatedBus;
+
+    try {
+      await session.withTransaction(async () => {
+        const bus = await Bus.findById(req.params.id).session(session);
+        if (!bus) throw httpError(404, "Bus not found");
+        if (bus.tripStatus === "In Progress") {
+          throw httpError(409, "End the active trip before unassigning the Conductor");
+        }
+
+        const previousId = bus.assignedConductor;
+        bus.assignedConductor = null;
+        await bus.save({ session });
+        if (previousId) await syncConductorAvailability(previousId, session);
+
+        updatedBus = await Bus.findById(bus._id)
+          .populate("assignedDriver", "driverCode name status")
+          .populate("assignedConductor", "conductorCode name status")
+          .session(session);
+      });
+
+      return res.json({
+        success: true,
+        message: "Conductor assignment removed",
+        bus: updatedBus,
+      });
+    } catch (error) {
+      console.error("Unassign Conductor error:", error.message);
+      return res.status(error.status || 500).json({
+        success: false,
+        message: error.message || "Failed to remove Conductor assignment",
+      });
+    } finally {
+      await session.endSession();
+    }
+  }
+);
 
 // ==================================================
 // ADMIN: REMOVE DRIVER ASSIGNMENT
@@ -518,76 +648,77 @@ app.patch(
   authenticate,
   authorize("Driver", "Conductor"),
   async (req, res) => {
+    const { id } = req.params;
+    const profileId = req.user.role === "Driver" ? req.user.driver : req.user.conductor;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "Invalid bus ID" });
+    }
+    if (!mongoose.isValidObjectId(profileId)) {
+      return res.status(403).json({
+        success: false,
+        message: `No ${req.user.role.toLowerCase()} profile is linked to this account`,
+      });
+    }
+
+    const session = await mongoose.startSession();
+    let startedBus;
+
     try {
-      const { id } = req.params;
+      await session.withTransaction(async () => {
+        const bus = await Bus.findById(id).session(session);
+        if (!bus) throw httpError(404, "Bus not found");
 
-      if (!mongoose.isValidObjectId(id)) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid bus ID",
-        });
-      }
+        const assignedProfile = req.user.role === "Driver"
+          ? bus.assignedDriver
+          : bus.assignedConductor;
+        if (assignedProfile?.toString() !== profileId.toString()) {
+          throw httpError(403, "You are not assigned to this bus");
+        }
+        if (bus.tripStatus === "In Progress") {
+          throw httpError(409, "Trip is already in progress");
+        }
 
-      if (req.user.role === "Driver" && !req.user.driver) {
-        return res.status(403).json({
-          success: false,
-          message: "No driver profile is linked to this account",
-        });
-      }
+        bus.tripStatus = "In Progress";
+        bus.status = "Running";
+        bus.tripStartedAt = new Date();
+        bus.tripEndedAt = null;
+        const firstRouteStop = [...(bus.routeStops || [])]
+          .sort((a, b) => a.sequence - b.sequence)[0];
+        if (firstRouteStop) {
+          bus.currentStopSequence = firstRouteStop.sequence;
+          bus.currentStopName = firstRouteStop.name;
+        }
+        await bus.save({ session });
 
-      const bus = await Bus.findById(id);
+        const profile = req.user.role === "Driver"
+          ? await Driver.findById(profileId).session(session)
+          : await Conductor.findById(profileId).session(session);
+        if (!profile || profile.status === "Inactive") {
+          throw httpError(409, "Your profile is unavailable for duty");
+        }
+        profile.status = "On Duty";
+        await profile.save({ session });
 
-      if (!bus) {
-        return res.status(404).json({
-          success: false,
-          message: "Bus not found",
-        });
-      }
+        startedBus = await Bus.findById(bus._id)
+          .populate("assignedDriver", "driverCode name status")
+          .populate("assignedConductor", "conductorCode name status")
+          .session(session);
+      });
 
-      const isAssigned = req.user.role === "Driver"
-        ? bus.assignedDriver?.toString() === req.user.driver?.toString()
-        : bus.assignedConductor?.toString() === req.user.conductor?.toString();
-      if (!isAssigned) {
-        return res.status(403).json({
-          success: false,
-          message: "You are not assigned to this bus",
-        });
-      }
-
-      if (bus.tripStatus === "In Progress") {
-        return res.status(409).json({
-          success: false,
-          message: "Trip is already in progress",
-        });
-      }
-
-      bus.tripStatus = "In Progress";
-      bus.status = "Running";
-      bus.tripStartedAt = new Date();
-      bus.tripEndedAt = null;
-      const firstRouteStop = [...(bus.routeStops || [])].sort((a, b) => a.sequence - b.sequence)[0];
-      if (firstRouteStop) {
-        bus.currentStopSequence = firstRouteStop.sequence;
-        bus.currentStopName = firstRouteStop.name;
-      }
-
-      await bus.save();
-
-      if (req.user.role === "Driver") await Driver.findByIdAndUpdate(req.user.driver, { status: "On Duty" });
-      else await Conductor.findByIdAndUpdate(req.user.conductor, { status: "On Duty" });
-
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Trip started successfully",
-        bus,
+        bus: startedBus,
       });
     } catch (error) {
       console.error("Start trip error:", error.message);
-
-      res.status(500).json({
+      return res.status(error.status || 500).json({
         success: false,
-        message: "Failed to start trip",
+        message: error.message || "Failed to start trip",
       });
+    } finally {
+      await session.endSession();
     }
   }
 );
@@ -601,112 +732,138 @@ app.patch(
   authenticate,
   authorize("Driver", "Conductor"),
   async (req, res) => {
+    const { id } = req.params;
+    const profileId = req.user.role === "Driver" ? req.user.driver : req.user.conductor;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "Invalid bus ID" });
+    }
+    if (!mongoose.isValidObjectId(profileId)) {
+      return res.status(403).json({
+        success: false,
+        message: `No ${req.user.role.toLowerCase()} profile is linked to this account`,
+      });
+    }
+
+    const session = await mongoose.startSession();
+    let updatedBus;
+    let durationMinutes = 0;
+    let profileStatus = null;
+    let endedAt;
+
     try {
-      const { id } = req.params;
+      await session.withTransaction(async () => {
+        const bus = await Bus.findById(id).session(session);
+        if (!bus) throw httpError(404, "Bus not found");
 
-      if (!mongoose.isValidObjectId(id)) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid bus ID",
+        const assignedProfile = req.user.role === "Driver"
+          ? bus.assignedDriver
+          : bus.assignedConductor;
+        if (assignedProfile?.toString() !== profileId.toString()) {
+          throw httpError(403, "You are not assigned to this bus");
+        }
+        if (bus.tripStatus !== "In Progress") {
+          throw httpError(409, "There is no active trip to end");
+        }
+
+        const [driver, conductor] = await Promise.all([
+          bus.assignedDriver
+            ? Driver.findById(bus.assignedDriver).session(session)
+            : null,
+          bus.assignedConductor
+            ? Conductor.findById(bus.assignedConductor).session(session)
+            : null,
+        ]);
+        if (req.user.role === "Driver" && !driver) {
+          throw httpError(409, "Assigned driver profile is unavailable");
+        }
+        if (req.user.role === "Conductor" && !conductor) {
+          throw httpError(409, "Assigned conductor profile is unavailable");
+        }
+
+        endedAt = new Date();
+        const startedAt = bus.tripStartedAt || endedAt;
+        durationMinutes = Math.max(
+          0,
+          Math.round((endedAt.getTime() - startedAt.getTime()) / 60000)
+        );
+
+        bus.tripHistory.push({
+          busNumber: bus.busNumber || "",
+          driver: driver?._id || null,
+          driverName: driver?.name || "",
+          driverCode: driver?.driverCode || "",
+          conductor: conductor?._id || null,
+          conductorName: conductor?.name || "",
+          conductorCode: conductor?.conductorCode || "",
+          source: bus.source || "",
+          destination: bus.destination || "",
+          route: bus.route || "",
+          startedAt,
+          endedAt,
+          durationMinutes,
+          tripStatus: "Completed",
         });
-      }
 
-      if (req.user.role === "Driver" && !req.user.driver) {
-        return res.status(403).json({
-          success: false,
-          message: "No driver profile is linked to this account",
-        });
-      }
+        bus.tripStatus = "Completed";
+        bus.status = "Stopped";
+        bus.tripEndedAt = endedAt;
+        bus.currentPassengerCount = 0;
+        bus.crowdLastUpdated = endedAt;
+        bus.crowdUpdateMode = "tickets";
+        bus.manualCrowdUpdate = null;
+        bus.currentStopSequence = null;
+        bus.currentStopName = "";
 
-      const bus = await Bus.findById(id);
+        if (req.user.role === "Driver") {
+          bus.assignedDriver = null;
+        } else {
+          // Release only the conductor who completed this duty; the driver stays assigned.
+          bus.assignedConductor = null;
+        }
 
-      if (!bus) {
-        return res.status(404).json({
-          success: false,
-          message: "Bus not found",
-        });
-      }
+        await Ticket.updateMany(
+          { bus: bus._id, status: "Active" },
+          { $set: { status: "Completed" } },
+          { session }
+        );
+        await bus.save({ session });
 
-      const isAssigned = req.user.role === "Driver"
-        ? bus.assignedDriver?.toString() === req.user.driver?.toString()
-        : bus.assignedConductor?.toString() === req.user.conductor?.toString();
-      if (!isAssigned) {
-        return res.status(403).json({
-          success: false,
-          message: "You are not assigned to this bus",
-        });
-      }
+        profileStatus = req.user.role === "Driver"
+          ? await syncDriverAvailability(profileId, session)
+          : await syncConductorAvailability(profileId, session);
 
-      if (bus.tripStatus !== "In Progress") {
-        return res.status(409).json({
-          success: false,
-          message: "There is no active trip to end",
-        });
-      }
-
-      const endedAt = new Date();
-      const startedAt = bus.tripStartedAt || endedAt;
-
-      const durationMinutes = Math.max(
-        0,
-        Math.round((endedAt.getTime() - startedAt.getTime()) / 60000)
-      );
-
-      const driver = req.user.role === "Driver" ? await Driver.findById(req.user.driver) : null;
-
-      bus.tripHistory.push({
-        busNumber: bus.busNumber || "",
-        driver: driver?._id || undefined,
-        driverName: driver?.name || "",
-        driverCode: driver?.driverCode || "",
-        source: bus.source || "",
-        destination: bus.destination || "",
-        route: bus.route || "",
-        startedAt,
-        endedAt,
-        durationMinutes,
-        tripStatus: "Completed",
+        updatedBus = await Bus.findById(bus._id)
+          .populate("assignedDriver", "driverCode name status")
+          .populate("assignedConductor", "conductorCode name status")
+          .session(session);
       });
 
-      bus.tripStatus = "Completed";
-      bus.status = "Stopped";
-      bus.tripEndedAt = endedAt;
-      bus.currentPassengerCount = 0;
-      bus.crowdLastUpdated = endedAt;
-      bus.crowdUpdateMode = "tickets";
-      bus.manualCrowdUpdate = null;
-      bus.currentStopSequence = null;
-      bus.currentStopName = "";
-      await Ticket.updateMany({ bus: bus._id, status: "Active" }, { $set: { status: "Completed" } });
+      const isConductor = req.user.role === "Conductor";
+      const message = isConductor
+        ? profileStatus === "Available"
+          ? "Duty completed. The bus is available for reassignment, and you are now Available."
+          : "Duty completed. The bus is available for reassignment; your other duty remains active."
+        : profileStatus === "Available"
+          ? "Trip completed. Driver is now available."
+          : "Trip completed. Your other bus assignment remains active.";
 
-      // Drivers are released at trip end; the admin-controlled Conductor
-      // assignment remains linked to the bus for the next trip.
-      if (req.user.role === "Driver") bus.assignedDriver = null;
-
-      await bus.save();
-
-      if (req.user.role === "Driver") await Driver.findByIdAndUpdate(req.user.driver, { status: "Available" });
-      else await Conductor.findByIdAndUpdate(req.user.conductor, { status: "Available" });
-
-      const updatedBus = await Bus.findById(bus._id).populate(
-        "assignedDriver",
-        "driverCode name status"
-      );
-
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
-        message: req.user.role === "Driver" ? "Trip completed. Driver is now available." : "Trip completed successfully.",
+        message,
         durationMinutes,
+        endedAt,
+        profileStatus,
         bus: updatedBus,
       });
     } catch (error) {
       console.error("End trip error:", error.message);
-
-      res.status(500).json({
+      return res.status(error.status || 500).json({
         success: false,
-        message: "Failed to end trip",
-        error: error.message,
+        message: error.message || "Failed to end trip",
       });
+    } finally {
+      await session.endSession();
     }
   }
 );

@@ -1,6 +1,7 @@
 
 const express = require("express");
 const { randomUUID } = require("node:crypto");
+const mongoose = require("mongoose");
 
 const router = express.Router();
 
@@ -43,8 +44,8 @@ function createError(message, status = 400) {
   return error;
 }
 
-// Get the logged-in conductor's profile and assigned bus.
-async function getConductorAndBus(userId) {
+// Resolve the logged-in conductor independently of the current bus assignment.
+async function getConductorUser(userId) {
   const user = await User.findById(userId).select("-password");
 
   if (!user || user.role !== "Conductor" || !user.conductor) {
@@ -53,6 +54,17 @@ async function getConductorAndBus(userId) {
       404
     );
   }
+
+  if (!mongoose.isValidObjectId(user.conductor)) {
+    throw createError("Conductor profile ID is invalid.", 403);
+  }
+
+  return user;
+}
+
+// Get the logged-in conductor's profile and assigned bus.
+async function getConductorAndBus(userId) {
+  const user = await getConductorUser(userId);
 
   const bus = await Bus.findOne({
     assignedConductor: user.conductor,
@@ -188,7 +200,24 @@ router.get(
   async (req, res) => {
     try {
       const userId = req.user._id || req.user.id;
-      const { bus } = await getConductorAndBus(userId);
+      const user = await getConductorUser(userId);
+      const bus = await Bus.findOne({ assignedConductor: user.conductor })
+        .populate("assignedDriver", "driverCode name status")
+        .populate("assignedConductor", "conductorCode name status");
+
+      if (!bus) {
+        return res.json({
+          success: true,
+          bus: null,
+          routeConfigured: false,
+          message: "Your duty is complete. Ask the administrator to assign your next bus.",
+          crowd: {
+            passengerCount: 0,
+            availableSeats: 0,
+            mode: "tickets",
+          },
+        });
+      }
 
       if (
         bus.crowdUpdateMode !== "manual" &&
@@ -460,12 +489,10 @@ router.get(
   async (req, res) => {
     try {
       const userId = req.user._id || req.user.id;
-      const { bus, user } = await getConductorAndBus(userId);
-
-      const tickets = await Ticket.find({
-        bus: bus._id,
-        conductor: user._id,
-      }).sort({ issuedAt: -1 });
+      const user = await getConductorUser(userId);
+      const tickets = await Ticket.find({ conductor: user._id })
+        .populate("bus", "busNumber route source destination")
+        .sort({ issuedAt: -1 });
 
       return res.json({
         success: true,

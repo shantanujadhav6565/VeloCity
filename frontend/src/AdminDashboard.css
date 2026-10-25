@@ -8,35 +8,35 @@
 
 .admin-page,
 .admin-dashboard {
-  --admin-bg: #f3f6fa;
-  --admin-surface: #ffffff;
-  --admin-surface-soft: #f8fafc;
+  --admin-bg: var(--vc-page, #f3f6fa);
+  --admin-surface: var(--vc-surface, #ffffff);
+  --admin-surface-soft: var(--vc-surface-soft, #f7f9fc);
 
-  --admin-primary: #193b63;
-  --admin-primary-hover: #102d4f;
-  --admin-primary-soft: #eaf1f8;
-  --admin-navy: #142d49;
+  --admin-primary: var(--vc-brand, #2563eb);
+  --admin-primary-hover: var(--vc-brand-strong, #1d4ed8);
+  --admin-primary-soft: var(--vc-brand-soft, #eff6ff);
+  --admin-navy: var(--vc-navy-secondary, #142d4e);
 
-  --admin-teal: #087f76;
-  --admin-teal-hover: #086b64;
-  --admin-accent: #c66b30;
+  --admin-teal: var(--vc-cyan, #06b6d4);
+  --admin-teal-hover: #0891b2;
+  --admin-accent: var(--vc-brand, #2563eb);
 
-  --admin-text: #1b2b3d;
-  --admin-text-secondary: #526477;
-  --admin-border: #d8e1ea;
-  --admin-border-strong: #aebdcb;
+  --admin-text: var(--vc-text, #172033);
+  --admin-text-secondary: var(--vc-muted, #64748b);
+  --admin-border: var(--vc-border, #dce4ee);
+  --admin-border-strong: var(--vc-border-strong, #bdcad9);
 
-  --admin-success: #166534;
-  --admin-success-bg: #edf9f0;
-  --admin-success-border: #b7e4c2;
+  --admin-success: var(--vc-success, #16a34a);
+  --admin-success-bg: var(--vc-success-soft, #f0fdf4);
+  --admin-success-border: var(--vc-success-border, #bbf7d0);
 
-  --admin-danger: #b4232c;
-  --admin-danger-bg: #fff1f1;
-  --admin-danger-border: #f3c1c3;
+  --admin-danger: var(--vc-danger, #dc2626);
+  --admin-danger-bg: var(--vc-danger-soft, #fef2f2);
+  --admin-danger-border: var(--vc-danger-border, #fecaca);
 
-  --admin-warning-text: #80500a;
-  --admin-warning-bg: #fff6df;
-  --admin-warning-border: #eacb80;
+  --admin-warning-text: var(--vc-warning, #d97706);
+  --admin-warning-bg: var(--vc-warning-soft, #fffbeb);
+  --admin-warning-border: var(--vc-warning-border, #fde68a);
 
   --admin-radius: 12px;
   --admin-shadow: 0 4px 18px rgba(20, 45, 73, 0.06);
@@ -667,76 +667,6 @@
     padding-top: 0;
     border-top: 0;
   }
-}
-
-/* ---------- Existing dark theme: supported selectors ---------- */
-/* These rules apply only if the app already sets .dark or
-   data-theme="dark" on an ancestor or the dashboard element. */
-
-:where(.dark, [data-theme="dark"]) :is(.admin-page, .admin-dashboard),
-:is(.admin-page, .admin-dashboard):is(.dark, [data-theme="dark"]) {
-  --admin-bg: #111d2a;
-  --admin-surface: #1b2b3c;
-  --admin-surface-soft: #24374a;
-
-  --admin-primary: #a9c9ee;
-  --admin-primary-hover: #c4dcf5;
-  --admin-primary-soft: #293d52;
-  --admin-navy: #edf4fb;
-
-  --admin-teal: #62c7bb;
-  --admin-teal-hover: #8adbd1;
-  --admin-accent: #eda66f;
-
-  --admin-text: #eaf1f8;
-  --admin-text-secondary: #b8c9d9;
-  --admin-border: #3b5065;
-  --admin-border-strong: #6a8197;
-
-  --admin-success: #a7e3b6;
-  --admin-success-bg: #193d2b;
-  --admin-success-border: #427353;
-
-  --admin-danger: #ffb3b6;
-  --admin-danger-bg: #45242b;
-  --admin-danger-border: #87505a;
-
-  --admin-warning-text: #f5d58f;
-  --admin-warning-bg: #3e341f;
-  --admin-warning-border: #776344;
-
-  --admin-shadow: 0 4px 18px rgba(0, 0, 0, 0.16);
-  --admin-shadow-hover: 0 10px 24px rgba(0, 0, 0, 0.23);
-  --admin-focus: rgba(169, 201, 238, 0.27);
-}
-
-:where(.dark, [data-theme="dark"]) .admin-header,
-.admin-header:is(.dark, [data-theme="dark"]) {
-  background: #101e2d;
-}
-
-:where(.dark, [data-theme="dark"]) :is(.admin-refresh, .admin-add-bus, .admin-btn-primary),
-:is(.admin-page, .admin-dashboard):is(.dark, [data-theme="dark"])
-  :is(.admin-refresh, .admin-add-bus, .admin-btn-primary) {
-  color: #10253b;
-}
-
-:where(.dark, [data-theme="dark"]) :is(.admin-btn-success, .approve-button),
-:is(.admin-page, .admin-dashboard):is(.dark, [data-theme="dark"])
-  :is(.admin-btn-success, .approve-button) {
-  color: #10271a;
-}
-
-:where(.dark, [data-theme="dark"]) :is(.admin-btn-danger, .reject-button),
-:is(.admin-page, .admin-dashboard):is(.dark, [data-theme="dark"])
-  :is(.admin-btn-danger, .reject-button) {
-  color: #35161a;
-}
-
-:where(.dark, [data-theme="dark"]) :is(.admin-btn-secondary, .admin-status-badge),
-:is(.admin-page, .admin-dashboard):is(.dark, [data-theme="dark"])
-  :is(.admin-btn-secondary, .admin-status-badge) {
-  color: var(--admin-text);
 }
 
 /* ---------- Reduced motion: dashboard only ---------- */

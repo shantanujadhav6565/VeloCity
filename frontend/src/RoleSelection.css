@@ -1,12 +1,12 @@
 /* VeloCity public landing page */
 .welcome-page {
-  --welcome-bg: #f7faff;
-  --welcome-surface: #fff;
-  --welcome-text: #10234a;
-  --welcome-muted: #48617f;
-  --welcome-border: #d9e5f5;
-  --welcome-blue: #075cf5;
-  --welcome-blue-dark: #064bd0;
+  --welcome-bg: var(--vc-page, #f3f6fa);
+  --welcome-surface: var(--vc-surface, #fff);
+  --welcome-text: var(--vc-navy, #0b1f3a);
+  --welcome-muted: var(--vc-muted, #64748b);
+  --welcome-border: var(--vc-border, #dce4ee);
+  --welcome-blue: var(--vc-brand, #2563eb);
+  --welcome-blue-dark: var(--vc-brand-strong, #1d4ed8);
   --welcome-shadow: 0 14px 34px rgba(27, 67, 130, .08);
   min-height: 100vh;
   min-height: 100dvh;
@@ -124,30 +124,6 @@
 .welcome-page .welcome-footer .welcome-footer-brand { color: var(--welcome-blue); font: 800 16px "Manrope", sans-serif; letter-spacing: -.3px; }
 
 /* Dark mode */
-html[data-theme="dark"] .welcome-page { --welcome-bg: #091326; --welcome-surface: #101d33; --welcome-text: #e6efff; --welcome-muted: #aabbd4; --welcome-border: #2b3d59; --welcome-blue: #74a5ff; --welcome-blue-dark: #4d86f5; background: var(--welcome-bg); }
-html[data-theme="dark"] .welcome-page .welcome-topbar, html[data-theme="dark"] .welcome-page .welcome-footer { background: #0e1a2e; border-color: #263853; }
-html[data-theme="dark"] .welcome-page .welcome-footer { color: #aabbd4; }
-html[data-theme="dark"] .welcome-page .welcome-brand-text small, html[data-theme="dark"] .welcome-page .welcome-nav a { color: #aabbd4; }
-html[data-theme="dark"] .welcome-page .welcome-nav a:hover, html[data-theme="dark"] .welcome-page .welcome-nav a.active { color: #82adff; }
-html[data-theme="dark"] .welcome-page .welcome-hero { background: linear-gradient(110deg, #0c172a 0%, #10213b 48%, #112c4a 100%); }
-html[data-theme="dark"] .welcome-page .welcome-hero-content h1, html[data-theme="dark"] .welcome-page .welcome-feature h3, html[data-theme="dark"] .welcome-page .welcome-role-card h3 { color: #e6efff; }
-html[data-theme="dark"] .welcome-page .welcome-description, html[data-theme="dark"] .welcome-page .welcome-feature p, html[data-theme="dark"] .welcome-page .welcome-role-description, html[data-theme="dark"] .welcome-page .welcome-section-heading p { color: #b0c0d7; }
-html[data-theme="dark"] .welcome-page .welcome-eyebrow { color: #a9c7ff; background: #172d4b; border-color: #304b71; }
-html[data-theme="dark"] .welcome-page .welcome-roles-section { background: #0d192c; }
-html[data-theme="dark"] .welcome-page .welcome-role-card { background: #14233a; border-color: #293c58; }
-html[data-theme="dark"] .welcome-page .welcome-role-card.passenger-card { background: #14233a; }
-html[data-theme="dark"] .welcome-page .welcome-role-card.driver-card { background: #112b2a; }
-html[data-theme="dark"] .welcome-page .welcome-role-card.conductor-card { background: #211c37; }
-html[data-theme="dark"] .welcome-page .welcome-role-card.admin-role-card { background: #302316; }
-html[data-theme="dark"] .welcome-page .passenger-icon { background: #203b65; color: #9ec1ff; }
-html[data-theme="dark"] .welcome-page .driver-icon { background: #174639; color: #72e2b9; }
-html[data-theme="dark"] .welcome-page .conductor-icon { background: #35295d; color: #c6b2ff; }
-html[data-theme="dark"] .welcome-page .admin-icon { background: #553718; color: #ffc27b; }
-html[data-theme="dark"] .welcome-page .welcome-stats { background: #14233a; border-color: #293c58; }
-html[data-theme="dark"] .welcome-page .welcome-stat { border-color: #2d4363; }
-html[data-theme="dark"] .welcome-page .welcome-stat small { color: #b0c0d7; }
-html[data-theme="dark"] .welcome-page .welcome-theme-toggle { background: #1b2b45; border-color: #344967; }
-html[data-theme="dark"] .welcome-page .welcome-role-card .welcome-secondary-btn { color: #a9c7ff; background: #10203a; border-color: #354b6a; }
 
 /* Tablet and mobile */
 @media (max-width: 1100px) {

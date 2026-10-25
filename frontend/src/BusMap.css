@@ -3,12 +3,12 @@
 ========================================= */
 
 .uber-map-card {
-  --map-card-bg: #ffffff;
-  --map-text: #172033;
-  --map-muted: #64748b;
-  --map-border: #e2e8f0;
-  --map-soft-bg: #f8fafc;
-  --map-shadow: rgba(15, 23, 42, 0.09);
+  --map-card-bg: var(--vc-surface, #ffffff);
+  --map-text: var(--vc-text, #172033);
+  --map-muted: var(--vc-muted, #64748b);
+  --map-border: var(--vc-border, #dce4ee);
+  --map-soft-bg: var(--vc-surface-soft, #f7f9fc);
+  --map-shadow: var(--vc-map-shadow, rgba(15, 23, 42, 0.09));
 
   width: 100%;
   min-width: 0;
@@ -23,15 +23,6 @@
 
   transition: background 0.25s ease, border-color 0.25s ease,
     box-shadow 0.25s ease;
-}
-
-html[data-theme="dark"] .uber-map-card {
-  --map-card-bg: #131e32;
-  --map-text: #f0f5ff;
-  --map-muted: #a3b2c9;
-  --map-border: #293750;
-  --map-soft-bg: #0d1729;
-  --map-shadow: rgba(0, 0, 0, 0.24);
 }
 
 /* MAP HEADER */
@@ -76,20 +67,14 @@ html[data-theme="dark"] .uber-map-card {
   flex-shrink: 0;
   padding: 9px 12px;
 
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--vc-success-border, #bbf7d0);
   border-radius: 999px;
-  background: #f0fdf4;
-  color: #166534;
+  background: var(--vc-success-soft, #f0fdf4);
+  color: var(--vc-success, #16a34a);
 
   font-size: 11px;
   font-weight: 800;
   white-space: nowrap;
-}
-
-html[data-theme="dark"] .uber-status-pill {
-  border-color: #22634f;
-  background: #10372f;
-  color: #86efc2;
 }
 
 .uber-live-dot {

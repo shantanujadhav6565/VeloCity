@@ -659,7 +659,7 @@ export default function ConductorDashboard() {
         <h2>Recently issued tickets</h2>
 
         {tickets.length === 0 ? (
-          <p>No tickets found for this bus and conductor.</p>
+          <p>No tickets have been issued under this conductor account yet.</p>
         ) : (
           <div className="conductor-table-wrapper">
             <table className="conductor-ticket-table">

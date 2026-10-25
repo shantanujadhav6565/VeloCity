@@ -65,6 +65,21 @@ function getToken() {
   );
 }
 
+function getInitialTheme() {
+  let theme = document.documentElement.getAttribute("data-theme");
+
+  try {
+    const savedTheme = localStorage.getItem("velocity-theme");
+    if (savedTheme === "light" || savedTheme === "dark") {
+      theme = savedTheme;
+    }
+  } catch {
+    // The root attribute set before React remains the source when storage is blocked.
+  }
+
+  return theme === "dark" ? "dark" : "light";
+}
+
 // =====================================================
 // ROLE-BASED DEFAULT DASHBOARD
 // =====================================================
@@ -936,7 +951,7 @@ function HomePage() {
                       Boolean(activeTrip)
                     }
                     onClick={() => handleJoinTrip(bus)}
-                    style={{ marginTop: "8px" }}
+                    className="search-button bus-view-button passenger-join-button"
                   >
                     {activeTrip?.busId?._id === bus._id
                       ? "Joined This Bus ✓"
@@ -1156,21 +1171,21 @@ function App() {
   const [user, setUser] = useState(getStoredUser);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem("velocity-theme");
-
-    return savedTheme === "dark" ? "dark" : "light";
-  });
+  const [theme, setTheme] = useState(getInitialTheme);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("velocity-theme", theme);
+    try {
+      localStorage.setItem("velocity-theme", theme);
+    } catch {
+      // Theme still applies for this session if storage is unavailable.
+    }
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((currentTheme) =>
-      currentTheme === "light" ? "dark" : "light"
-    );
+    const nextTheme = theme === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", nextTheme);
+    setTheme(nextTheme);
   };
 
   // Refresh stored user when navigating
@@ -1339,13 +1354,9 @@ function App() {
 
                   <button
                     type="button"
-                    className="search-button"
+                    className="search-button portal-logout-button"
                     onClick={handleLogout}
                     tabIndex={sidebarOpen ? 0 : -1}
-                    style={{
-                      marginTop: "12px",
-                      width: "100%",
-                    }}
                   >
                     Logout
                   </button>

@@ -1,11 +1,11 @@
 /* Full-scene landing page treatment based on the supplied VeloCity reference. */
 .welcome-page {
-  --scene-ink: #0b1f46;
+  --scene-ink: #0b1f3a;
   --scene-copy: #fff;
   --scene-muted: #eef5ff;
   --scene-glass: rgba(234, 242, 253, .62);
   --scene-glass-border: rgba(255, 255, 255, .88);
-  --scene-panel: rgba(9, 31, 70, .78);
+  --scene-panel: rgba(11, 31, 58, .78);
   --scene-panel-border: rgba(201, 222, 255, .28);
   position: relative;
   isolation: isolate;
@@ -57,7 +57,7 @@
 .welcome-page .welcome-brand-icon i:nth-child(1) { width: 40px; margin-left: 31px; }
 .welcome-page .welcome-brand-icon i:nth-child(2) { width: 63px; }
 .welcome-page .welcome-brand-icon i:nth-child(3) { width: 48px; margin-left: 13px; }
-.welcome-page .welcome-brand-text { color: #fff; font-size: clamp(26px, 2.4vw, 42px); letter-spacing: -1.8px; }
+.welcome-page .welcome-brand-text { color: #fff; font-size: clamp(26px, 2.4vw, 42px); letter-spacing: -1.8px; white-space: nowrap; }
 .welcome-page .welcome-brand-text strong { color: #2685ff; }
 .welcome-page .welcome-brand-text small { color: rgba(245, 249, 255, .86); font-size: clamp(9px, .67vw, 13px); }
 .welcome-page .welcome-nav { flex: 1; gap: clamp(14px, 2.1vw, 43px); }
@@ -230,37 +230,6 @@
 .welcome-page .welcome-footer { padding: 17px 5.2%; border-top-color: rgba(205, 224, 255, .19); color: rgba(240, 246, 255, .72); background: rgba(7, 25, 58, .78); }
 .welcome-page .welcome-footer .welcome-footer-brand { color: #8fc2ff; }
 
-html[data-theme="dark"] .welcome-page { background-color: #0b1f46; }
-html[data-theme="dark"] .welcome-page .welcome-topbar { background: rgba(9, 31, 70, .66); border-color: rgba(214, 231, 255, .22); }
-html[data-theme="dark"] .welcome-page .welcome-brand,
-html[data-theme="dark"] .welcome-page .welcome-brand-text { color: #fff; }
-html[data-theme="dark"] .welcome-page .welcome-brand-text small { color: rgba(245, 249, 255, .86); }
-html[data-theme="dark"] .welcome-page .welcome-nav a { color: rgba(247, 250, 255, .88); }
-html[data-theme="dark"] .welcome-page .welcome-nav a svg { color: rgba(229, 240, 255, .86); }
-html[data-theme="dark"] .welcome-page .welcome-nav a:hover,
-html[data-theme="dark"] .welcome-page .welcome-nav a.active { color: #fff; border-bottom-color: #8cc4ff; }
-html[data-theme="dark"] .welcome-page .welcome-nav a:hover svg,
-html[data-theme="dark"] .welcome-page .welcome-nav a.active svg { color: #a9d2ff; }
-html[data-theme="dark"] .welcome-page .welcome-theme-toggle { color: #fff; border-color: rgba(225, 238, 255, .5); background: rgba(14, 42, 85, .76); }
-html[data-theme="dark"] .welcome-page .welcome-hero,
-html[data-theme="dark"] .welcome-page .welcome-roles-section { background: transparent; }
-html[data-theme="dark"] .welcome-page .welcome-hero-content h1 { color: #fff; }
-html[data-theme="dark"] .welcome-page .welcome-description { color: rgba(247, 250, 255, .94); }
-html[data-theme="dark"] .welcome-page .welcome-feature h3 { color: #0b1f46; }
-html[data-theme="dark"] .welcome-page .welcome-feature p { color: #122b4f; }
-html[data-theme="dark"] .welcome-page .welcome-role-card { background: var(--scene-glass); border-color: var(--scene-glass-border); }
-html[data-theme="dark"] .welcome-page .welcome-role-card.passenger-card { background: rgba(229, 240, 255, .62); border-color: rgba(191, 219, 254, .9); }
-html[data-theme="dark"] .welcome-page .welcome-role-card.driver-card { background: rgba(226, 247, 239, .62); border-color: rgba(187, 247, 208, .9); }
-html[data-theme="dark"] .welcome-page .welcome-role-card.conductor-card { background: rgba(239, 232, 255, .64); border-color: rgba(221, 214, 254, .92); }
-html[data-theme="dark"] .welcome-page .welcome-role-card.admin-role-card { background: rgba(255, 240, 220, .64); border-color: rgba(254, 215, 170, .93); }
-html[data-theme="dark"] .welcome-page .welcome-role-card h3,
-html[data-theme="dark"] .welcome-page .welcome-role-description { color: #0b1f46; }
-html[data-theme="dark"] .welcome-page .welcome-admin-access { color: #f2f7ff; }
-html[data-theme="dark"] .welcome-page .welcome-stats { background: var(--scene-panel); border-color: var(--scene-panel-border); }
-html[data-theme="dark"] .welcome-page .welcome-stat strong { color: #fff; }
-html[data-theme="dark"] .welcome-page .welcome-stat small { color: rgba(240, 246, 255, .88); }
-html[data-theme="dark"] .welcome-page .welcome-footer { color: rgba(240, 246, 255, .72); background: rgba(7, 25, 58, .78); }
-
 /* Light theme retains the same scene and glass composition. */
 html[data-theme="light"] .welcome-page,
 html:not([data-theme]) .welcome-page {
@@ -369,3 +338,41 @@ html:not([data-theme]) .welcome-page .welcome-footer { color: #dce9fb; }
   .welcome-page .welcome-nav a { font-size: 11px; }
   .welcome-page .welcome-stat { flex-direction: column; align-items: flex-start; }
 }
+
+/* Keep the photographic landing visual while using readable, solid operations surfaces. */
+.welcome-page .welcome-topbar {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.welcome-page .welcome-features {
+  background: rgba(245, 249, 255, .92);
+  border-color: rgba(214, 228, 246, .96);
+  box-shadow: 0 8px 22px rgba(11, 31, 58, .1);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.welcome-page .welcome-role-card {
+  background: #fff;
+  border-color: #dce4ee;
+  box-shadow: 0 4px 14px rgba(11, 31, 58, .12);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.welcome-page .welcome-role-card h3 { color: #0b1f3a; }
+.welcome-page .welcome-role-description { color: #465a73; }
+.welcome-page .welcome-stats { background: #edf4fb; border-color: #dce4ee; }
+html[data-theme="dark"] .welcome-page .welcome-topbar { background: color-mix(in srgb, var(--vc-surface) 92%, transparent); }
+html[data-theme="dark"] .welcome-page .welcome-features { background: color-mix(in srgb, var(--vc-surface) 94%, transparent); border-color: var(--vc-border-strong); }
+html[data-theme="dark"] .welcome-page .welcome-feature h3 { color: var(--vc-text); }
+html[data-theme="dark"] .welcome-page .welcome-feature p { color: var(--vc-muted); }
+html[data-theme="dark"] .welcome-page .welcome-role-card,
+html[data-theme="dark"] .welcome-page .welcome-role-card.passenger-card,
+html[data-theme="dark"] .welcome-page .welcome-role-card.driver-card,
+html[data-theme="dark"] .welcome-page .welcome-role-card.conductor-card,
+html[data-theme="dark"] .welcome-page .welcome-role-card.admin-role-card {
+  background: var(--vc-surface);
+  border-color: var(--vc-border);
+}
+html[data-theme="dark"] .welcome-page .welcome-role-card h3 { color: var(--vc-text); }
+html[data-theme="dark"] .welcome-page .welcome-role-description { color: var(--vc-muted); }
+html[data-theme="dark"] .welcome-page .welcome-stats { background: var(--vc-surface); border-color: var(--vc-border); }

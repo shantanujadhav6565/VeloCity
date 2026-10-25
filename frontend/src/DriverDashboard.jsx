@@ -463,7 +463,7 @@ export default function DriverDashboard() {
         <h2>Driver Dashboard</h2>
 
         {error && (
-          <p role="alert" style={{ color: "crimson" }}>
+          <p role="alert" className="driver-alert-message">
             {error}
           </p>
         )}
@@ -488,7 +488,7 @@ export default function DriverDashboard() {
       </p>
 
       {error && (
-        <p role="alert" style={{ color: "crimson" }}>
+        <p role="alert" className="driver-alert-message">
           {error}
         </p>
       )}

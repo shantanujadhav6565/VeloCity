@@ -5,12 +5,21 @@ html[data-theme="light"] {
   --vc-brand: #2563eb;
   --vc-brand-strong: #1d4ed8;
   --vc-brand-soft: #eff6ff;
-  --vc-navy: #10264a;
-  --vc-cyan: #38bdf8;
-  --vc-success: #15803d;
-  --vc-warning: #b45309;
-  --vc-danger: #b4232c;
+  --vc-navy: #0b1f3a;
+  --vc-navy-secondary: #142d4e;
+  --vc-cyan: #06b6d4;
+  --vc-success: #16a34a;
+  --vc-warning: #d97706;
+  --vc-danger: #dc2626;
   --vc-info: #0369a1;
+  --vc-success-soft: #f0fdf4;
+  --vc-success-border: #bbf7d0;
+  --vc-warning-soft: #fffbeb;
+  --vc-warning-border: #fde68a;
+  --vc-danger-soft: #fef2f2;
+  --vc-danger-border: #fecaca;
+  --vc-info-soft: #eff6ff;
+  --vc-info-border: #bfdbfe;
   --vc-page: #f3f6fb;
   --vc-surface: #ffffff;
   --vc-surface-soft: #f7f9fc;
@@ -23,6 +32,7 @@ html[data-theme="light"] {
   --vc-shadow-sm: 0 1px 3px rgba(15, 35, 65, .06), 0 1px 2px rgba(15, 35, 65, .04);
   --vc-shadow: 0 8px 24px rgba(15, 35, 65, .07);
   --vc-shadow-lg: 0 18px 44px rgba(15, 35, 65, .11);
+  --vc-map-shadow: rgba(15, 23, 42, .09);
   --vc-radius-sm: 8px;
   --vc-radius: 12px;
   --vc-radius-lg: 16px;
@@ -42,13 +52,17 @@ html[data-theme="light"] {
   --surface: var(--vc-surface);
   --surface-soft: var(--vc-surface-soft);
   --surface-bg: var(--vc-surface);
+  --surface-raised: var(--vc-surface-raised);
   --text-primary: var(--vc-text);
   --text-secondary: var(--vc-muted);
   --border-color: var(--vc-border);
   --input-bg: var(--vc-input);
+  --topbar-bg: color-mix(in srgb, var(--vc-surface) 94%, transparent);
+  --shadow-color: rgba(15, 35, 65, .08);
   --velocity-blue: var(--vc-brand);
   --velocity-blue-hover: var(--vc-brand-strong);
   --velocity-navy: var(--vc-navy);
+  --velocity-accent: var(--vc-cyan);
   --primary: var(--vc-brand);
   --primary-dark: var(--vc-brand-strong);
   --primary-hover: var(--vc-brand-strong);
@@ -60,7 +74,10 @@ html[data-theme="light"] {
   --font-family: var(--vc-font);
   --radius: var(--vc-radius);
   --radius-sm: var(--vc-radius-sm);
+  --radius-md: var(--vc-radius);
+  --radius-lg: var(--vc-radius-lg);
   --transition: var(--vc-transition);
+  --transition-fast: var(--vc-transition);
 }
 
 html[data-theme="dark"] {
@@ -68,12 +85,21 @@ html[data-theme="dark"] {
   --vc-brand: #60a5fa;
   --vc-brand-strong: #93c5fd;
   --vc-brand-soft: #152b48;
-  --vc-navy: #eaf2ff;
+  --vc-navy: #0b1f3a;
+  --vc-navy-secondary: #eaf2ff;
   --vc-cyan: #67d3f5;
   --vc-success: #4ade80;
   --vc-warning: #fbbf24;
   --vc-danger: #f87171;
   --vc-info: #7dd3fc;
+  --vc-success-soft: #103329;
+  --vc-success-border: #245b48;
+  --vc-warning-soft: #3b3018;
+  --vc-warning-border: #685324;
+  --vc-danger-soft: #3b2028;
+  --vc-danger-border: #673944;
+  --vc-info-soft: #172d4b;
+  --vc-info-border: #304b71;
   --vc-page: #081426;
   --vc-surface: #0f1d33;
   --vc-surface-soft: #13243d;
@@ -86,30 +112,38 @@ html[data-theme="dark"] {
   --vc-shadow-sm: 0 1px 3px rgba(0, 0, 0, .2);
   --vc-shadow: 0 8px 24px rgba(0, 0, 0, .2);
   --vc-shadow-lg: 0 18px 44px rgba(0, 0, 0, .28);
+  --vc-map-shadow: rgba(0, 0, 0, .24);
   --vc-focus: 0 0 0 3px rgba(96, 165, 250, .27);
   --page-bg: var(--vc-page);
   --surface: var(--vc-surface);
   --surface-soft: var(--vc-surface-soft);
   --surface-bg: var(--vc-surface);
+  --surface-raised: var(--vc-surface-raised);
   --text-primary: var(--vc-text);
   --text-secondary: var(--vc-muted);
   --border-color: var(--vc-border);
   --input-bg: var(--vc-input);
+  --topbar-bg: color-mix(in srgb, var(--vc-surface) 94%, transparent);
+  --shadow-color: rgba(0, 0, 0, .22);
   --velocity-blue: var(--vc-brand);
   --velocity-blue-hover: var(--vc-brand-strong);
-  --velocity-navy: var(--vc-navy);
+  --velocity-navy: var(--vc-text);
+  --velocity-accent: var(--vc-cyan);
   --primary: var(--vc-brand);
   --primary-dark: var(--vc-brand-strong);
   --primary-hover: var(--vc-brand-strong);
   --primary-light: var(--vc-brand-soft);
-  --navy: var(--vc-navy);
+  --navy: var(--vc-text);
   --text: var(--vc-text);
   --muted: var(--vc-muted);
   --border: var(--vc-border);
   --font-family: var(--vc-font);
   --radius: var(--vc-radius);
   --radius-sm: var(--vc-radius-sm);
+  --radius-md: var(--vc-radius);
+  --radius-lg: var(--vc-radius-lg);
   --transition: var(--vc-transition);
+  --transition-fast: var(--vc-transition);
 }
 
 html { scroll-padding-top: 88px; }
@@ -139,6 +173,7 @@ input::placeholder, textarea::placeholder { color: var(--vc-muted); opacity: .8;
 
 /* Signed-in application shell and navigation */
 .portal-layout, .portal-main { background: var(--vc-page); color: var(--vc-text); }
+.portal-layout { min-height: 100vh; }
 .portal-topbar {
   min-height: 72px;
   padding: 12px clamp(16px, 2.5vw, 32px);
@@ -158,14 +193,13 @@ input::placeholder, textarea::placeholder { color: var(--vc-muted); opacity: .8;
 .portal-menu-toggle:hover, .theme-toggle:hover { border-color: var(--vc-brand); background: var(--vc-brand-soft); }
 .theme-toggle-icon { color: var(--vc-brand); }
 .portal-sidebar {
-  background: #0d1b30;
+  background: var(--vc-navy);
   border-right: 1px solid rgba(148, 163, 184, .17);
 }
 .portal-sidebar .portal-nav-link { border-radius: 9px; }
 .portal-sidebar .portal-nav-link.active { background: #1e4f98; box-shadow: inset 3px 0 #60a5fa; }
 .portal-sidebar .portal-nav-link:hover { background: #182c49; }
-.portal-status { color: #13724f; background: #eaf8f0; border-color: #c5e8d2; }
-html[data-theme="dark"] .portal-status { color: #86efac; background: #103329; border-color: #245b48; }
+.portal-status { color: var(--vc-success); background: var(--vc-success-soft); border-color: var(--vc-success-border); }
 .portal-content { max-width: 1680px; padding: clamp(16px, 2vw, 28px); }
 .portal-page {
   padding: clamp(20px, 2.4vw, 32px);
@@ -237,11 +271,25 @@ html[data-theme="dark"] .portal-status { color: #86efac; background: #103329; bo
   --admin-primary-hover: #1d4ed8;
   --admin-primary-soft: var(--vc-brand-soft);
   --admin-navy: var(--vc-text);
-  --admin-teal: #0f766e;
-  --admin-teal-hover: #115e59;
-  --admin-accent: #60a5fa;
+  --admin-teal: var(--vc-cyan);
+  --admin-teal-hover: #0891b2;
+  --admin-accent: var(--vc-cyan);
   --admin-text: var(--vc-text);
   --admin-text-secondary: var(--vc-muted);
+  --admin-card: var(--vc-surface);
+  --admin-muted: var(--vc-muted);
+  --admin-shadow: var(--vc-shadow-sm);
+  --admin-shadow-hover: var(--vc-shadow);
+  --admin-success: var(--vc-success);
+  --admin-success-bg: var(--vc-success-soft);
+  --admin-success-border: var(--vc-success-border);
+  --admin-danger: var(--vc-danger);
+  --admin-danger-bg: var(--vc-danger-soft);
+  --admin-danger-border: var(--vc-danger-border);
+  --admin-warning-text: var(--vc-warning);
+  --admin-warning-bg: var(--vc-warning-soft);
+  --admin-warning-border: var(--vc-warning-border);
+  --admin-focus: var(--vc-focus);
   --admin-border: var(--vc-border);
   --admin-border-strong: var(--vc-border-strong);
   --admin-radius: var(--vc-radius);
@@ -255,7 +303,7 @@ html[data-theme="dark"] .portal-status { color: #86efac; background: #103329; bo
   padding: 24px clamp(18px, 4vw, 56px);
   border: 0;
   border-bottom: 1px solid #233853;
-  background: #0d1b30;
+  background: var(--vc-navy);
   box-shadow: 0 6px 18px rgba(5, 18, 37, .14);
 }
 .admin-header h1, .admin-header p, .admin-brand h1, .admin-brand p { color: #f5f8ff; }
@@ -277,6 +325,14 @@ html[data-theme="dark"] .portal-status { color: #86efac; background: #103329; bo
 .admin-btn-primary:hover, .admin-add-bus:hover, .admin-refresh:hover:not(:disabled) { background: #1d4ed8; }
 .admin-btn-secondary { color: var(--vc-text); background: var(--vc-surface); border-color: var(--vc-border-strong); }
 .admin-btn-secondary:hover { background: var(--vc-surface-soft); }
+.admin-dashboard :is(button, a, input, select, textarea):focus-visible,
+.admin-page :is(button, a, input, select, textarea):focus-visible,
+.conductor-dashboard :is(button, a, input, select, textarea):focus-visible,
+.info-panel :is(button, a, input, select, textarea):focus-visible,
+.portal-page :is(button, a, input, select, textarea):focus-visible {
+  outline: none;
+  box-shadow: var(--vc-focus);
+}
 
 /* Driver and conductor operational views */
 .conductor-dashboard {
@@ -317,6 +373,17 @@ html[data-theme="dark"] .portal-status { color: #86efac; background: #103329; bo
 
 /* Authentication and account forms */
 .login-page {
+  --login-bg: var(--vc-page);
+  --login-card: var(--vc-surface);
+  --login-text: var(--vc-text);
+  --login-muted: var(--vc-muted);
+  --login-label: var(--vc-text);
+  --login-border: var(--vc-border-strong);
+  --login-input-bg: var(--vc-input);
+  --login-primary: var(--vc-brand);
+  --login-primary-hover: var(--vc-brand-strong);
+  --login-shadow: var(--vc-shadow-lg);
+  --login-footer: var(--vc-muted);
   --page-bg: var(--vc-page);
   --card-bg: var(--vc-surface);
   --text-primary: var(--vc-text);
@@ -340,25 +407,16 @@ html[data-theme="dark"] .portal-status { color: #86efac; background: #103329; bo
 .add-bus-form { --ab-primary: var(--vc-brand); --ab-primary-hover: var(--vc-brand-strong); --ab-page: var(--vc-page); --ab-surface: var(--vc-surface); --ab-text: var(--vc-text); --ab-muted: var(--vc-muted); --ab-border: var(--vc-border-strong); --ab-border-hover: var(--vc-brand); --ab-shadow: var(--vc-shadow-sm); }
 .add-bus-form input, .add-bus-form select, .add-bus-form textarea { color: var(--vc-text); background: var(--vc-input); border-color: var(--vc-border-strong); }
 
-/* Dark theme alignment for page-local token systems and legacy hardcoded surfaces. */
-html[data-theme="dark"] .admin-dashboard,
-html[data-theme="dark"] .admin-page {
-  --admin-success-bg: #103329;
-  --admin-success-border: #245b48;
-  --admin-danger-bg: #3b2028;
-  --admin-danger-border: #673944;
-  --admin-warning-bg: #3b3018;
-  --admin-warning-border: #685324;
-}
-html[data-theme="dark"] .conductor-dashboard { --success: #4ade80; --warning: #fbbf24; --danger: #f87171; }
-html[data-theme="dark"] .info-panel { --panel-bg: var(--vc-surface); --panel-text: var(--vc-text); --panel-muted: var(--vc-muted); --panel-border: var(--vc-border); --panel-form-bg: var(--vc-surface-soft); --panel-input-bg: var(--vc-input); --panel-input-text: var(--vc-text); --panel-disabled-bg: #1c2d45; --panel-secondary-bg: var(--vc-surface-raised); --panel-secondary-text: var(--vc-text); }
-html[data-theme="dark"] .add-bus-form { --ab-focus: rgba(96, 165, 250, .28); }
-html[data-theme="dark"] .login-page { --primary: var(--vc-brand); --primary-hover: var(--vc-brand-strong); }
-html[data-theme="dark"] .login-error { color: #fecaca; background: #3b2028; border-color: #673944; }
-html[data-theme="dark"] .signup-success { color: #bbf7d0; background: #103329; border-color: #245b48; }
-html[data-theme="dark"] .info-panel [role="alert"][style*="crimson"] { color: #fca5a5 !important; }
-html[data-theme="dark"] .portal-page .search-button { color: #fff; background: #1d4ed8; }
-html[data-theme="dark"] .map-location-info, html[data-theme="dark"] .map-coordinates, html[data-theme="dark"] .map-note { color: var(--vc-muted); background: var(--vc-surface-soft); border-color: var(--vc-border); }
+/* Legacy component variables are aliases to this theme source, never separate palettes. */
+.admin-dashboard, .admin-page { --admin-success: var(--vc-success); --admin-success-bg: var(--vc-success-soft); --admin-success-border: var(--vc-success-border); --admin-danger: var(--vc-danger); --admin-danger-bg: var(--vc-danger-soft); --admin-danger-border: var(--vc-danger-border); --admin-warning-text: var(--vc-warning); --admin-warning-bg: var(--vc-warning-soft); --admin-warning-border: var(--vc-warning-border); }
+.conductor-dashboard { --success: var(--vc-success); --warning: var(--vc-warning); --danger: var(--vc-danger); }
+.info-panel { --panel-bg: var(--vc-surface); --panel-text: var(--vc-text); --panel-muted: var(--vc-muted); --panel-border: var(--vc-border); --panel-form-bg: var(--vc-surface-soft); --panel-input-bg: var(--vc-input); --panel-input-text: var(--vc-text); --panel-disabled-bg: var(--vc-surface-raised); --panel-secondary-bg: var(--vc-surface-raised); --panel-secondary-text: var(--vc-text); }
+.add-bus-form { --ab-focus: var(--vc-focus); }
+.login-page { --primary: var(--vc-brand); --primary-hover: var(--vc-brand-strong); }
+.login-error { color: var(--vc-danger); background: var(--vc-danger-soft); border-color: var(--vc-danger-border); }
+.signup-success { color: var(--vc-success); background: var(--vc-success-soft); border-color: var(--vc-success-border); }
+.portal-page .search-button { color: #fff; background: var(--vc-brand); }
+.map-location-info, .map-coordinates, .map-note { color: var(--vc-muted); background: var(--vc-surface-soft); border-color: var(--vc-border); }
 
 @media (max-width: 850px) {
   .portal-content { padding: 18px; }
@@ -386,4 +444,61 @@ html[data-theme="dark"] .map-location-info, html[data-theme="dark"] .map-coordin
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* Industrial operations polish shared across every existing screen. */
+:is(.admin-dashboard, .admin-page, .conductor-dashboard, .info-panel, .portal-page)
+  :is(.admin-request-card, .admin-stat-card, .admin-summary, .conductor-card, .driver-bus-card, .map-card, .uber-map-card) {
+  box-shadow: var(--vc-shadow-sm);
+}
+:is(.admin-dashboard, .admin-page, .conductor-dashboard, .info-panel, .portal-page)
+  :is(button, .admin-btn, .approve-button, .reject-button, .search-button) {
+  min-height: 40px;
+  border-radius: var(--vc-radius-sm);
+  transition: color var(--vc-transition), background-color var(--vc-transition), border-color var(--vc-transition), box-shadow var(--vc-transition);
+}
+:is(.admin-dashboard, .admin-page, .conductor-dashboard, .info-panel, .portal-page)
+  :is(button, .admin-btn, .approve-button, .reject-button, .search-button):hover:not(:disabled) {
+  filter: brightness(.96);
+}
+.admin-dashboard :is(.admin-success, .admin-alert-success, .conductor-success, [role="status"]),
+.admin-page :is(.admin-success, .admin-alert-success, .conductor-success, [role="status"]) {
+  border-radius: var(--vc-radius-sm);
+}
+.admin-dashboard :is(.admin-error, .admin-alert-error, .conductor-error, [role="alert"]),
+.admin-page :is(.admin-error, .admin-alert-error, .conductor-error, [role="alert"]) {
+  border-radius: var(--vc-radius-sm);
+}
+.portal-content, .admin-main, .admin-content { min-width: 0; }
+.portal-content > *, .admin-main > *, .admin-content > * { min-width: 0; }
+.portal-page, .admin-request-list, .conductor-dashboard, .info-panel { overflow-wrap: anywhere; }
+.portal-logout-button { width: 100%; margin-top: 12px; }
+.passenger-join-button { margin-top: 8px; }
+.assignment-refresh-button { margin-left: 10px; }
+.driver-alert-message { color: var(--vc-danger); }
+.admin-dashboard .admin-header h1, .admin-dashboard .admin-header p,
+.admin-page .admin-header h1, .admin-page .admin-header p { color: #f5f8ff; }
+.admin-dashboard .admin-status-badge,
+.admin-page .admin-status-badge { border: 1px solid var(--vc-border); }
+.admin-dashboard :is(.admin-status-available, .status-available),
+.admin-page :is(.admin-status-available, .status-available) { color: var(--vc-success); background: var(--vc-success-soft); border-color: var(--vc-success-border); }
+.admin-dashboard :is(.admin-status-duty, .status-on-duty),
+.admin-page :is(.admin-status-duty, .status-on-duty) { color: var(--vc-warning); background: var(--vc-warning-soft); border-color: var(--vc-warning-border); }
+.uber-map-card { --map-card-bg: var(--vc-surface); --map-text: var(--vc-text); --map-muted: var(--vc-muted); --map-border: var(--vc-border); --map-soft-bg: var(--vc-surface-soft); }
+html[data-theme="dark"] .welcome-page { color-scheme: dark; }
+@media (max-width: 720px) {
+  .portal-topbar { flex-wrap: wrap; }
+  .portal-topbar-title { flex: 1 1 180px; min-width: 0; }
+  .portal-status { margin-left: auto; }
+  .admin-request-card-header { align-items: flex-start; }
+  .info-panel form { grid-template-columns: minmax(0, 1fr); }
+  .conductor-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+}
+@media (max-width: 420px) {
+  .portal-topbar-title h2 { font-size: 15px; }
+  .theme-toggle-label { display: none; }
+  .portal-content { padding: 10px; }
+  .portal-page, .info-panel { padding: 14px; }
+  .admin-header-actions { width: 100%; }
+  .admin-header-actions > * { flex: 1 1 120px; }
 }

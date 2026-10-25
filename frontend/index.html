@@ -6,14 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VeloCity — Smart Transport</title>
     <script>
+      let theme = "light";
       try {
         const savedTheme = localStorage.getItem("velocity-theme");
         if (savedTheme === "dark" || savedTheme === "light") {
-          document.documentElement.setAttribute("data-theme", savedTheme);
+          theme = savedTheme;
         }
       } catch {
-        // The app defaults to light mode when browser storage is unavailable.
+        // Keep the defined light default if browser storage is unavailable.
       }
+      document.documentElement.setAttribute("data-theme", theme);
     </script>
   </head>
   <body>

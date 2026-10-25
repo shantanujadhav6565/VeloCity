@@ -3,17 +3,17 @@
 */
 
 .add-bus-form {
-  --ab-primary: #19324d;
-  --ab-primary-hover: #10253b;
-  --ab-accent: #c96b2c;
-  --ab-page: #f3f6fa;
-  --ab-surface: #ffffff;
-  --ab-text: #172638;
-  --ab-muted: #56677a;
-  --ab-border: #cbd5df;
-  --ab-border-hover: #8999aa;
-  --ab-focus: rgba(25, 50, 77, 0.18);
-  --ab-shadow: 0 8px 28px rgba(16, 37, 59, 0.08);
+  --ab-primary: var(--vc-brand, #2563eb);
+  --ab-primary-hover: var(--vc-brand-strong, #1d4ed8);
+  --ab-accent: var(--vc-cyan, #06b6d4);
+  --ab-page: var(--vc-page, #f3f6fa);
+  --ab-surface: var(--vc-surface, #ffffff);
+  --ab-text: var(--vc-text, #172033);
+  --ab-muted: var(--vc-muted, #64748b);
+  --ab-border: var(--vc-border, #dce4ee);
+  --ab-border-hover: var(--vc-brand, #2563eb);
+  --ab-focus: var(--vc-focus, rgba(37, 99, 235, 0.22));
+  --ab-shadow: var(--vc-shadow, 0 8px 24px rgba(15, 35, 65, 0.07));
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -157,15 +157,15 @@
 }
 
 .add-bus-error {
-  color: #991b1b;
-  background: #fef2f2;
-  border-color: #fecaca;
+  color: var(--vc-danger);
+  background: var(--vc-danger-soft);
+  border-color: var(--vc-danger-border);
 }
 
 .add-bus-success {
-  color: #166534;
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  color: var(--vc-success);
+  background: var(--vc-success-soft);
+  border-color: var(--vc-success-border);
 }
 
 @media (min-width: 651px) {
@@ -180,41 +180,6 @@
     justify-self: start;
     min-width: 160px;
   }
-}
-
-/* Applies only if the existing app uses .dark or data-theme="dark". */
-:where(.dark, [data-theme="dark"]) .add-bus-form,
-.add-bus-form:is(.dark, [data-theme="dark"]) {
-  --ab-primary: #83a9d2;
-  --ab-primary-hover: #a4c0de;
-  --ab-accent: #f0a66b;
-  --ab-page: #142131;
-  --ab-surface: #1b2b3d;
-  --ab-text: #edf3f9;
-  --ab-muted: #bac9d8;
-  --ab-border: #40546a;
-  --ab-border-hover: #7790a8;
-  --ab-focus: rgba(131, 169, 210, 0.25);
-  --ab-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
-}
-
-:where(.dark, [data-theme="dark"]) .add-bus-form > button,
-.add-bus-form:is(.dark, [data-theme="dark"]) > button {
-  color: #10253b;
-}
-
-:where(.dark, [data-theme="dark"]) .add-bus-error,
-.add-bus-form:is(.dark, [data-theme="dark"]) .add-bus-error {
-  color: #fecaca;
-  background: #451f29;
-  border-color: #87404b;
-}
-
-:where(.dark, [data-theme="dark"]) .add-bus-success,
-.add-bus-form:is(.dark, [data-theme="dark"]) .add-bus-success {
-  color: #bbf7d0;
-  background: #17392e;
-  border-color: #356b51;
 }
 
 @media (prefers-reduced-motion: reduce) {

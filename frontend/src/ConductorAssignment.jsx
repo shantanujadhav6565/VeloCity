@@ -17,8 +17,8 @@ export default function ConductorAssignment() {
 
   const navigate = useNavigate();
 
-  // Login madhil session token
-  const getToken = () => sessionStorage.getItem("token");
+  // Support both existing persistence locations used by the admin login.
+  const getToken = () => sessionStorage.getItem("token") || localStorage.getItem("token");
 
   const getBusId = (bus) => bus?._id ?? bus?.id ?? "";
 
@@ -55,9 +55,9 @@ export default function ConductorAssignment() {
     );
   });
 
-  // Fakt conductor assign naslelya buses
+  // Completed or idle buses can be reassigned; active trips are never eligible.
   const availableBuses = buses.filter(
-    (bus) => !hasAssignedConductor(bus)
+    (bus) => bus.tripStatus !== "In Progress"
   );
 
   const loadData = useCallback(async () => {
@@ -148,14 +148,14 @@ export default function ConductorAssignment() {
       return;
     }
 
-    // Selected bus ajun available aahe ka?
+    // Recheck trip state because the admin list can be stale.
     const bus = buses.find(
       (item) => String(getBusId(item)) === selectedBus
     );
 
-    if (!bus || hasAssignedConductor(bus)) {
+    if (!bus || bus.tripStatus === "In Progress") {
       setError(
-        "This bus already has a conductor. Refresh and select another bus."
+        "This bus has an active trip and cannot be reassigned. Refresh and try again."
       );
       await loadData();
       return;
@@ -282,12 +282,17 @@ export default function ConductorAssignment() {
                 {bus.busNumber || "Unnamed bus"} —{" "}
                 {bus.source || "Unknown source"} to{" "}
                 {bus.destination || "Unknown destination"}
+                {bus.tripStatus === "Completed"
+                  ? " — Completed, available for reassignment"
+                  : hasAssignedConductor(bus)
+                    ? " — Available for reassignment"
+                    : " — Unassigned"}
               </option>
             ))}
           </select>
 
           {buses.length > 0 && availableBuses.length === 0 && (
-            <p>No unassigned buses available.</p>
+            <p>No buses without an active trip are available for assignment.</p>
           )}
         </div>
 
@@ -355,12 +360,12 @@ export default function ConductorAssignment() {
 
         <button
           type="button"
+          className="assignment-refresh-button"
           onClick={() => {
             setMessage("");
             loadData();
           }}
           disabled={loading || saving}
-          style={{ marginLeft: "10px" }}
         >
           Refresh
         </button>

@@ -50,6 +50,19 @@ const tripHistorySchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    conductor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Conductor",
+      default: null,
+    },
+    conductorName: {
+      type: String,
+      default: "",
+    },
+    conductorCode: {
+      type: String,
+      default: "",
+    },
     busNumber: {
       type: String,
       required: true,

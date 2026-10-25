@@ -219,6 +219,7 @@ function RoleSelection({ theme, onToggleTheme }) {
           id="roles"
         >
           <div className="welcome-section-heading">
+            <br>  </br>
             <span id="how-it-works">GET STARTED</span>
             <h2>Choose Your Role</h2>
             <p>
@@ -340,12 +341,12 @@ function RoleSelection({ theme, onToggleTheme }) {
         </section>
 
         {/* STATS */}
-        <section
+        {/* <section
           className="welcome-stats"
           aria-label="Illustrative platform statistics, not live operational data"
           id="benefits"
-        >
-          <div className="welcome-stat">
+        > */}
+          {/* <div className="welcome-stat">
             <span><Icon name="people" size={31} /></span>
             <div>
               <strong>10K+</strong>
@@ -375,8 +376,8 @@ function RoleSelection({ theme, onToggleTheme }) {
               <strong>4.8/5</strong>
               <small>Customer Satisfaction</small>
             </div>
-          </div>
-        </section>
+          </div> */}
+        {/* </section> */}
       </main>
 
       {/* FOOTER */}

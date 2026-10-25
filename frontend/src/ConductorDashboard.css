@@ -4,21 +4,21 @@
 ========================================= */
 
 .conductor-dashboard {
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-light: #eff6ff;
-  --navy: #14213d;
-  --accent: #38bdf8;
-  --success: #16a34a;
-  --warning: #d97706;
-  --danger: #dc2626;
+  --primary: var(--vc-brand, #2563eb);
+  --primary-hover: var(--vc-brand-strong, #1d4ed8);
+  --primary-light: var(--vc-brand-soft, #eff6ff);
+  --navy: var(--vc-navy, #0b1f3a);
+  --accent: var(--vc-cyan, #06b6d4);
+  --success: var(--vc-success, #16a34a);
+  --warning: var(--vc-warning, #d97706);
+  --danger: var(--vc-danger, #dc2626);
 
-  --bg: #f4f7fc;
-  --surface: #ffffff;
-  --surface-alt: #f8faff;
-  --text: #172033;
-  --text-secondary: #64748b;
-  --border: #e2e8f0;
+  --bg: var(--vc-page, #f3f6fa);
+  --surface: var(--vc-surface, #ffffff);
+  --surface-alt: var(--vc-surface-soft, #f7f9fc);
+  --text: var(--vc-text, #172033);
+  --text-secondary: var(--vc-muted, #64748b);
+  --border: var(--vc-border, #dce4ee);
   --shadow: 0 8px 28px rgba(15, 35, 75, 0.07);
 
   min-height: 100vh;
@@ -424,20 +424,20 @@
 
 .conductor-dashboard .status-success,
 .conductor-dashboard .badge-success {
-  color: #15803d;
-  background: #dcfce7;
+  color: var(--vc-success);
+  background: var(--vc-success-soft);
 }
 
 .conductor-dashboard .status-pending,
 .conductor-dashboard .badge-warning {
-  color: #92400e;
-  background: #fef3c7;
+  color: var(--vc-warning);
+  background: var(--vc-warning-soft);
 }
 
 .conductor-dashboard .status-danger,
 .conductor-dashboard .badge-danger {
-  color: #b91c1c;
-  background: #fee2e2;
+  color: var(--vc-danger);
+  background: var(--vc-danger-soft);
 }
 
 /* =========================================
@@ -455,23 +455,23 @@
 
 .conductor-dashboard .alert-success,
 .conductor-dashboard .message-success {
-  color: #166534;
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  color: var(--vc-success);
+  background: var(--vc-success-soft);
+  border-color: var(--vc-success-border);
 }
 
 .conductor-dashboard .alert-error,
 .conductor-dashboard .message-error {
-  color: #991b1b;
-  background: #fef2f2;
-  border-color: #fecaca;
+  color: var(--vc-danger);
+  background: var(--vc-danger-soft);
+  border-color: var(--vc-danger-border);
 }
 
 .conductor-dashboard .alert-warning,
 .conductor-dashboard .message-warning {
-  color: #92400e;
-  background: #fffbeb;
-  border-color: #fde68a;
+  color: var(--vc-warning);
+  background: var(--vc-warning-soft);
+  border-color: var(--vc-warning-border);
 }
 
 /* =========================================
@@ -492,105 +492,6 @@
   padding: 24px;
   color: var(--text-secondary);
   text-align: center;
-}
-
-/* =========================================
-   DARK MODE
-   Supports common theme selectors
-========================================= */
-
-html[data-theme="dark"] .conductor-dashboard,
-.dark-theme .conductor-dashboard,
-.dark .conductor-dashboard {
-  --primary: #60a5fa;
-  --primary-hover: #3b82f6;
-  --primary-light: #1e3355;
-  --navy: #dbeafe;
-  --accent: #38bdf8;
-
-  --bg: #0b1220;
-  --surface: #131e32;
-  --surface-alt: #1a2940;
-  --text: #e5edf9;
-  --text-secondary: #a4b3c9;
-  --border: #293a53;
-  --shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
-}
-
-html[data-theme="dark"] .conductor-dashboard .card:hover,
-html[data-theme="dark"] .conductor-dashboard .dashboard-card:hover,
-html[data-theme="dark"] .conductor-dashboard .conductor-card:hover,
-.dark-theme .conductor-dashboard .card:hover,
-.dark-theme .conductor-dashboard .dashboard-card:hover,
-.dark-theme .conductor-dashboard .conductor-card:hover,
-.dark .conductor-dashboard .card:hover,
-.dark .conductor-dashboard .dashboard-card:hover,
-.dark .conductor-dashboard .conductor-card:hover {
-  border-color: #3b5c87;
-}
-
-html[data-theme="dark"] .conductor-dashboard .btn-secondary:hover,
-html[data-theme="dark"] .conductor-dashboard .secondary-btn:hover,
-.dark-theme .conductor-dashboard .btn-secondary:hover,
-.dark-theme .conductor-dashboard .secondary-btn:hover,
-.dark .conductor-dashboard .btn-secondary:hover,
-.dark .conductor-dashboard .secondary-btn:hover {
-  color: #bfdbfe;
-  background: #1e3355;
-}
-
-html[data-theme="dark"] .conductor-dashboard .status-success,
-html[data-theme="dark"] .conductor-dashboard .badge-success,
-.dark-theme .conductor-dashboard .status-success,
-.dark-theme .conductor-dashboard .badge-success,
-.dark .conductor-dashboard .status-success,
-.dark .conductor-dashboard .badge-success {
-  color: #86efac;
-  background: #143824;
-}
-
-html[data-theme="dark"] .conductor-dashboard .status-pending,
-html[data-theme="dark"] .conductor-dashboard .badge-warning,
-.dark-theme .conductor-dashboard .status-pending,
-.dark-theme .conductor-dashboard .badge-warning,
-.dark .conductor-dashboard .status-pending,
-.dark .conductor-dashboard .badge-warning {
-  color: #fcd34d;
-  background: #422f12;
-}
-
-html[data-theme="dark"] .conductor-dashboard .status-danger,
-html[data-theme="dark"] .conductor-dashboard .badge-danger,
-.dark-theme .conductor-dashboard .status-danger,
-.dark-theme .conductor-dashboard .badge-danger,
-.dark .conductor-dashboard .status-danger,
-.dark .conductor-dashboard .badge-danger {
-  color: #fca5a5;
-  background: #451a1a;
-}
-
-html[data-theme="dark"] .conductor-dashboard .alert-success,
-.dark-theme .conductor-dashboard .alert-success,
-.dark .conductor-dashboard .alert-success {
-  color: #86efac;
-  background: #143824;
-  border-color: #24583a;
-}
-
-html[data-theme="dark"] .conductor-dashboard .alert-error,
-.dark-theme .conductor-dashboard .alert-error,
-.dark .conductor-dashboard .alert-error {
-  color: #fca5a5;
-  background: #451a1a;
-  border-color: #7f2929;
-}
-
-html[data-theme="dark"] .conductor-dashboard .alert-warning,
-.dark-theme .conductor-dashboard .alert-warning,
-.dark .conductor-dashboard .alert-warning {
-  color: #fcd34d;
-  background: #422f12;
-  border-color: #79551e;
 }
 
 /* =========================================
