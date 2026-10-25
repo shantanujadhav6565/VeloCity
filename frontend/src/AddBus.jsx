@@ -1,6 +1,8 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AddBus.css";
+
 const API_URL = "http://localhost:5000/api/buses";
 
 const initialForm = {
@@ -34,13 +36,35 @@ export default function AddBus() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     setError("");
     setMessage("");
 
-    const token = localStorage.getItem("token");
+    // Token from sessionStorage first, then localStorage
+    const token =
+      sessionStorage.getItem("token") ||
+      localStorage.getItem("token");
 
     if (!token) {
       setError("Please login as Admin first.");
+      return;
+    }
+
+    // Check the logged-in user's role
+    let user = null;
+
+    try {
+      const savedUser =
+        sessionStorage.getItem("user") ||
+        localStorage.getItem("user");
+
+      user = savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      user = null;
+    }
+
+    if (user?.role && user.role.toLowerCase() !== "admin") {
+      setError("Access denied. Please login with an Admin account.");
       return;
     }
 
@@ -50,18 +74,22 @@ export default function AddBus() {
       destination: form.destination.trim(),
       route: form.route.trim(),
       busImage: form.busImage.trim(),
+
       sourceLatitude:
         form.sourceLatitude === ""
           ? null
           : Number(form.sourceLatitude),
+
       sourceLongitude:
         form.sourceLongitude === ""
           ? null
           : Number(form.sourceLongitude),
+
       destinationLatitude:
         form.destinationLatitude === ""
           ? null
           : Number(form.destinationLatitude),
+
       destinationLongitude:
         form.destinationLongitude === ""
           ? null
@@ -80,14 +108,26 @@ export default function AddBus() {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error(
+            "Session expired or token invalid. Please login again."
+          );
+        }
+
+        if (response.status === 403) {
+          throw new Error(
+            "Access denied. Only an Admin can add buses."
+          );
+        }
+
         throw new Error(data.message || "Failed to add bus.");
       }
 
       setMessage("Bus added successfully!");
-      setForm(initialForm);
+      setForm({ ...initialForm });
     } catch (err) {
       setError(err.message || "Something went wrong.");
     } finally {
@@ -128,7 +168,7 @@ export default function AddBus() {
       <div className="admin-title-row">
         <div>
           <h2>Add New Bus</h2>
-          <p>Register a bus in TransitPulse.</p>
+          <p>Register a bus in VeloCity.</p>
         </div>
 
         <button

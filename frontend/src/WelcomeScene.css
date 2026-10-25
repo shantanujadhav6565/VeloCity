@@ -1,0 +1,371 @@
+/* Full-scene landing page treatment based on the supplied VeloCity reference. */
+.welcome-page {
+  --scene-ink: #0b1f46;
+  --scene-copy: #fff;
+  --scene-muted: #eef5ff;
+  --scene-glass: rgba(234, 242, 253, .62);
+  --scene-glass-border: rgba(255, 255, 255, .88);
+  --scene-panel: rgba(9, 31, 70, .78);
+  --scene-panel-border: rgba(201, 222, 255, .28);
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: clip;
+  color: var(--scene-copy);
+  background: #0b1f46;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
+}
+.welcome-page::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(5, 21, 51, .86) 0%, rgba(9, 34, 76, .68) 31%, rgba(10, 43, 87, .16) 63%, rgba(5, 22, 51, .28) 100%),
+    linear-gradient(0deg, rgba(5, 19, 48, .92) 0%, rgba(5, 22, 53, .65) 31%, transparent 67%);
+}
+.welcome-page .welcome-scene-image {
+  position: fixed;
+  z-index: -2;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100svh;
+  max-width: none;
+  object-fit: cover;
+  object-position: center 51%;
+  pointer-events: none;
+}
+.welcome-page > header,
+.welcome-page > main,
+.welcome-page > footer { position: relative; z-index: 1; }
+.welcome-page .welcome-topbar {
+  min-height: clamp(76px, 5vw, 102px);
+  padding: 10px 5.2%;
+  gap: clamp(16px, 2vw, 34px);
+  border-bottom: 1px solid rgba(214, 231, 255, .22);
+  background: rgba(9, 31, 70, .66);
+  box-shadow: 0 6px 24px rgba(4, 17, 41, .12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.welcome-page .welcome-brand { min-width: 0; gap: 14px; color: #fff; }
+.welcome-page .welcome-brand-icon { width: 72px; height: 58px; flex-basis: 72px; }
+.welcome-page .welcome-brand-icon i { height: 8px; }
+.welcome-page .welcome-brand-icon i:nth-child(1) { width: 40px; margin-left: 31px; }
+.welcome-page .welcome-brand-icon i:nth-child(2) { width: 63px; }
+.welcome-page .welcome-brand-icon i:nth-child(3) { width: 48px; margin-left: 13px; }
+.welcome-page .welcome-brand-text { color: #fff; font-size: clamp(26px, 2.4vw, 42px); letter-spacing: -1.8px; }
+.welcome-page .welcome-brand-text strong { color: #2685ff; }
+.welcome-page .welcome-brand-text small { color: rgba(245, 249, 255, .86); font-size: clamp(9px, .67vw, 13px); }
+.welcome-page .welcome-nav { flex: 1; gap: clamp(14px, 2.1vw, 43px); }
+.welcome-page .welcome-nav a {
+  min-height: 56px;
+  gap: 10px;
+  padding: 0 3px;
+  color: rgba(247, 250, 255, .88);
+  border-bottom: 2px solid transparent;
+  font-size: clamp(13px, .92vw, 18px);
+}
+.welcome-page .welcome-nav a svg { color: rgba(229, 240, 255, .86); }
+.welcome-page .welcome-nav a:hover,
+.welcome-page .welcome-nav a.active { color: #fff; border-bottom-color: #8cc4ff; }
+.welcome-page .welcome-nav a:hover svg,
+.welcome-page .welcome-nav a.active svg { color: #a9d2ff; }
+.welcome-page .welcome-theme-toggle {
+  min-height: 40px;
+  padding: 4px 9px;
+  border: 1px solid rgba(225, 238, 255, .5);
+  color: #fff;
+  background: rgba(14, 42, 85, .76);
+  box-shadow: none;
+}
+.welcome-page .welcome-theme-toggle > svg:first-child { color: #ffb22c; }
+.welcome-page .welcome-theme-toggle > svg:last-child { color: #fff; }
+.welcome-page .welcome-theme-switch { background: rgba(14, 34, 69, .95); }
+
+/* The supplied scene supplies the bus, skyline, road and stop in one image. */
+.welcome-page .welcome-hero {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: clamp(420px, 26.85vw, 552px);
+  min-height: 0;
+  padding: clamp(26px, 2.5vw, 48px) 5.9% 18px;
+  background: transparent;
+}
+.welcome-page .welcome-hero-content {
+  position: relative;
+  z-index: 2;
+  width: min(51%, 890px);
+  min-width: 0;
+}
+.welcome-page .welcome-eyebrow {
+  gap: 9px;
+  padding: 9px 16px;
+  border: 1px solid rgba(255, 255, 255, .55);
+  color: #174d89;
+  background: rgba(239, 247, 255, .87);
+  font-size: clamp(11px, .8vw, 15px);
+  letter-spacing: .1px;
+}
+.welcome-page .welcome-eyebrow svg { flex: 0 0 auto; color: #1672df; }
+.welcome-page .welcome-hero-content h1 {
+  margin: clamp(16px, 1.25vw, 25px) 0 15px;
+  color: #fff;
+  font: 800 clamp(49px, 3.15vw, 68px)/1.02 "Manrope", "DM Sans", sans-serif;
+  letter-spacing: -.045em;
+  text-shadow: 0 2px 18px rgba(3, 21, 52, .14);
+}
+.welcome-page .welcome-hero-content h1 span {
+  color: #2585ff;
+  font-size: 1.22em;
+  line-height: .97;
+}
+.welcome-page .welcome-description {
+  max-width: 770px;
+  margin: 0;
+  color: rgba(247, 250, 255, .94);
+  font-size: clamp(14px, 1vw, 19px);
+  line-height: 1.48;
+  text-shadow: 0 1px 10px rgba(3, 21, 52, .35);
+}
+.welcome-page .welcome-features {
+  width: min(100%, 875px);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin-top: clamp(18px, 1.5vw, 30px);
+  padding: 14px 9px;
+  border: 1px solid rgba(255, 255, 255, .67);
+  border-radius: 17px;
+  background: rgba(225, 237, 251, .53);
+  box-shadow: 0 10px 28px rgba(5, 22, 52, .12);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+.welcome-page .welcome-feature {
+  min-width: 0;
+  padding: 0 clamp(9px, 1vw, 20px);
+  border: 0;
+  border-right: 1px solid rgba(255, 255, 255, .62);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+}
+.welcome-page .welcome-feature:last-child { border-right: 0; }
+.welcome-page .welcome-feature-icon { width: 60px; height: 60px; border-radius: 20px; color: #0866e9; background: #eaf3ff; }
+.welcome-page .welcome-feature-icon.eco-icon { color: #068b64; background: #bdf4dc; }
+.welcome-page .welcome-feature h3 { margin: 10px 0 4px; color: #0b1f46; font-size: clamp(12px, .86vw, 17px); font-weight: 800; }
+.welcome-page .welcome-feature p { color: #122b4f; font-size: clamp(10px, .73vw, 14px); line-height: 1.35; }
+.welcome-page .welcome-hero-visual { position: absolute; z-index: 1; inset: 0; display: block; width: auto; min-height: 0; margin: 0; padding: 0; overflow: visible; border: 0; background: transparent; mask-image: none; -webkit-mask-image: none; pointer-events: none; }
+.welcome-page .welcome-visual-label {
+  top: 7%;
+  left: 68%;
+  color: #075be5;
+  font-size: clamp(20px, 1.65vw, 34px);
+  text-shadow: 0 1px 8px rgba(255, 255, 255, .35);
+}
+.welcome-page .welcome-visual-label span { color: #075be5; font-size: .88em; }
+
+/* Glass role cards remain over the road portion of the same scene. */
+.welcome-page .welcome-roles-section {
+  min-height: clamp(340px, 19vw, 390px);
+  padding: 8px 5% 15px;
+  border: 0;
+  background: transparent;
+}
+.welcome-page .welcome-section-heading { margin: 0 auto 18px; text-align: center; }
+.welcome-page .welcome-section-heading > span { color: #9cc8ff; font-size: clamp(11px, .75vw, 15px); letter-spacing: 1.5px; }
+.welcome-page .welcome-section-heading h2 { margin: 4px 0 5px; color: #fff; font-size: clamp(27px, 1.8vw, 37px); text-shadow: 0 2px 10px rgba(5, 20, 47, .35); }
+.welcome-page .welcome-section-heading p { color: rgba(246, 249, 255, .92); font-size: clamp(13px, .88vw, 17px); }
+.welcome-page .welcome-role-grid { width: min(1452px, 86vw); gap: clamp(12px, 1vw, 22px); }
+.welcome-page .welcome-role-card {
+  min-height: 216px;
+  padding: 12px clamp(16px, 1.8vw, 34px) 15px;
+  border: 1px solid var(--scene-glass-border);
+  border-radius: 16px;
+  background: var(--scene-glass);
+  box-shadow: 0 12px 30px rgba(4, 21, 50, .16);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+}
+.welcome-page .welcome-role-card.passenger-card { background: rgba(229, 240, 255, .62); border-color: rgba(191, 219, 254, .9); }
+.welcome-page .welcome-role-card.driver-card { background: rgba(226, 247, 239, .62); border-color: rgba(187, 247, 208, .9); }
+.welcome-page .welcome-role-card.conductor-card { background: rgba(239, 232, 255, .64); border-color: rgba(221, 214, 254, .92); }
+.welcome-page .welcome-role-card.admin-role-card { background: rgba(255, 240, 220, .64); border-color: rgba(254, 215, 170, .93); }
+.welcome-page .welcome-role-card:hover, .welcome-page .welcome-role-card.role-selected { transform: translateY(-2px); box-shadow: 0 16px 32px rgba(4, 21, 50, .22); }
+.welcome-page .welcome-role-icon { width: 60px; height: 60px; margin-bottom: 7px; }
+.welcome-page .welcome-role-card h3 { margin: 0 0 5px; color: #0b1f46; font-size: clamp(17px, 1.05vw, 21px); }
+.welcome-page .welcome-role-description { min-height: 36px; margin-bottom: 10px; color: #263a58; font-size: clamp(11px, .78vw, 15px); line-height: 1.4; }
+.welcome-page .welcome-role-card .welcome-primary-btn, .welcome-page .welcome-role-card .welcome-admin-btn { min-height: 42px; border-radius: 24px; font-size: clamp(12px, .8vw, 15px); box-shadow: 0 5px 12px rgba(9, 31, 70, .16); }
+.welcome-page .welcome-role-card .welcome-primary-btn { background: #0866f5; }
+.welcome-page .welcome-role-card.driver-card .welcome-primary-btn { background: #079669; }
+.welcome-page .welcome-role-card.conductor-card .welcome-primary-btn { background: #5633e8; }
+.welcome-page .welcome-role-card.admin-role-card .welcome-admin-btn { background: #f97316; }
+.welcome-page .welcome-admin-access { max-width: 445px; gap: 14px; margin-top: 14px; color: #f2f7ff; text-shadow: 0 1px 8px rgba(5, 20, 47, .4); }
+.welcome-page .welcome-admin-access i { background: rgba(215, 231, 255, .55); }
+.welcome-page .welcome-auth-options { color: #10264a; }
+.welcome-page .welcome-auth-options > p, .welcome-page .welcome-auth-options small { color: #253b59; }
+
+/* A translucent navy strip anchors the bottom of the reference composition. */
+.welcome-page .welcome-stats {
+  width: min(1968px, 96%);
+  min-height: 84px;
+  margin: 0 auto 16px;
+  padding: 8px 18px;
+  border: 1px solid rgba(190, 216, 255, .29);
+  border-radius: 17px;
+  background: var(--scene-panel);
+  box-shadow: 0 10px 30px rgba(4, 18, 45, .2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+.welcome-page .welcome-stat { gap: clamp(12px, 1.5vw, 28px); border-right-color: rgba(205, 224, 255, .24); }
+.welcome-page .welcome-stat > span { display: grid; place-items: center; color: #1b83ff; }
+.welcome-page .welcome-stat strong { color: #fff; font-size: clamp(19px, 1.25vw, 27px); }
+.welcome-page .welcome-stat small { color: rgba(240, 246, 255, .88); font-size: clamp(10px, .73vw, 14px); }
+.welcome-page .welcome-footer { padding: 17px 5.2%; border-top-color: rgba(205, 224, 255, .19); color: rgba(240, 246, 255, .72); background: rgba(7, 25, 58, .78); }
+.welcome-page .welcome-footer .welcome-footer-brand { color: #8fc2ff; }
+
+html[data-theme="dark"] .welcome-page { background-color: #0b1f46; }
+html[data-theme="dark"] .welcome-page .welcome-topbar { background: rgba(9, 31, 70, .66); border-color: rgba(214, 231, 255, .22); }
+html[data-theme="dark"] .welcome-page .welcome-brand,
+html[data-theme="dark"] .welcome-page .welcome-brand-text { color: #fff; }
+html[data-theme="dark"] .welcome-page .welcome-brand-text small { color: rgba(245, 249, 255, .86); }
+html[data-theme="dark"] .welcome-page .welcome-nav a { color: rgba(247, 250, 255, .88); }
+html[data-theme="dark"] .welcome-page .welcome-nav a svg { color: rgba(229, 240, 255, .86); }
+html[data-theme="dark"] .welcome-page .welcome-nav a:hover,
+html[data-theme="dark"] .welcome-page .welcome-nav a.active { color: #fff; border-bottom-color: #8cc4ff; }
+html[data-theme="dark"] .welcome-page .welcome-nav a:hover svg,
+html[data-theme="dark"] .welcome-page .welcome-nav a.active svg { color: #a9d2ff; }
+html[data-theme="dark"] .welcome-page .welcome-theme-toggle { color: #fff; border-color: rgba(225, 238, 255, .5); background: rgba(14, 42, 85, .76); }
+html[data-theme="dark"] .welcome-page .welcome-hero,
+html[data-theme="dark"] .welcome-page .welcome-roles-section { background: transparent; }
+html[data-theme="dark"] .welcome-page .welcome-hero-content h1 { color: #fff; }
+html[data-theme="dark"] .welcome-page .welcome-description { color: rgba(247, 250, 255, .94); }
+html[data-theme="dark"] .welcome-page .welcome-feature h3 { color: #0b1f46; }
+html[data-theme="dark"] .welcome-page .welcome-feature p { color: #122b4f; }
+html[data-theme="dark"] .welcome-page .welcome-role-card { background: var(--scene-glass); border-color: var(--scene-glass-border); }
+html[data-theme="dark"] .welcome-page .welcome-role-card.passenger-card { background: rgba(229, 240, 255, .62); border-color: rgba(191, 219, 254, .9); }
+html[data-theme="dark"] .welcome-page .welcome-role-card.driver-card { background: rgba(226, 247, 239, .62); border-color: rgba(187, 247, 208, .9); }
+html[data-theme="dark"] .welcome-page .welcome-role-card.conductor-card { background: rgba(239, 232, 255, .64); border-color: rgba(221, 214, 254, .92); }
+html[data-theme="dark"] .welcome-page .welcome-role-card.admin-role-card { background: rgba(255, 240, 220, .64); border-color: rgba(254, 215, 170, .93); }
+html[data-theme="dark"] .welcome-page .welcome-role-card h3,
+html[data-theme="dark"] .welcome-page .welcome-role-description { color: #0b1f46; }
+html[data-theme="dark"] .welcome-page .welcome-admin-access { color: #f2f7ff; }
+html[data-theme="dark"] .welcome-page .welcome-stats { background: var(--scene-panel); border-color: var(--scene-panel-border); }
+html[data-theme="dark"] .welcome-page .welcome-stat strong { color: #fff; }
+html[data-theme="dark"] .welcome-page .welcome-stat small { color: rgba(240, 246, 255, .88); }
+html[data-theme="dark"] .welcome-page .welcome-footer { color: rgba(240, 246, 255, .72); background: rgba(7, 25, 58, .78); }
+
+/* Light theme retains the same scene and glass composition. */
+html[data-theme="light"] .welcome-page,
+html:not([data-theme]) .welcome-page {
+  --scene-copy: #10264a;
+  --scene-muted: #334c6b;
+  --scene-glass: rgba(255, 255, 255, .72);
+  --scene-glass-border: rgba(255, 255, 255, .94);
+  --scene-panel: rgba(239, 246, 255, .84);
+  --scene-panel-border: rgba(255, 255, 255, .9);
+  background-color: #d9ebfb;
+}
+html[data-theme="light"] .welcome-page::before,
+html:not([data-theme]) .welcome-page::before {
+  background:
+    linear-gradient(90deg, rgba(247, 251, 255, .91) 0%, rgba(242, 248, 255, .78) 31%, rgba(240, 247, 255, .13) 63%, rgba(4, 25, 54, .14) 100%),
+    linear-gradient(0deg, rgba(9, 34, 74, .67) 0%, rgba(9, 34, 74, .27) 30%, transparent 66%);
+}
+html[data-theme="light"] .welcome-page .welcome-topbar,
+html:not([data-theme]) .welcome-page .welcome-topbar { border-bottom-color: rgba(18, 52, 94, .12); background: rgba(248, 251, 255, .78); }
+html[data-theme="light"] .welcome-page .welcome-brand,
+html:not([data-theme]) .welcome-page .welcome-brand,
+html[data-theme="light"] .welcome-page .welcome-brand-text,
+html:not([data-theme]) .welcome-page .welcome-brand-text { color: #0b1f46; }
+html[data-theme="light"] .welcome-page .welcome-brand-text small,
+html:not([data-theme]) .welcome-page .welcome-brand-text small { color: #405979; }
+html[data-theme="light"] .welcome-page .welcome-nav a,
+html:not([data-theme]) .welcome-page .welcome-nav a { color: #294568; }
+html[data-theme="light"] .welcome-page .welcome-nav a svg,
+html:not([data-theme]) .welcome-page .welcome-nav a svg { color: #31527c; }
+html[data-theme="light"] .welcome-page .welcome-nav a.active,
+html:not([data-theme]) .welcome-page .welcome-nav a.active,
+html[data-theme="light"] .welcome-page .welcome-nav a:hover,
+html:not([data-theme]) .welcome-page .welcome-nav a:hover { color: #075be5; border-bottom-color: #075be5; }
+html[data-theme="light"] .welcome-page .welcome-theme-toggle,
+html:not([data-theme]) .welcome-page .welcome-theme-toggle { color: #10264a; border-color: rgba(54, 83, 121, .35); background: rgba(255, 255, 255, .76); }
+html[data-theme="light"] .welcome-page .welcome-hero-content h1,
+html:not([data-theme]) .welcome-page .welcome-hero-content h1 { color: #10264a; text-shadow: 0 1px 7px rgba(255,255,255,.3); }
+html[data-theme="light"] .welcome-page .welcome-description,
+html:not([data-theme]) .welcome-page .welcome-description { color: #284361; text-shadow: 0 1px 8px rgba(255,255,255,.4); }
+html[data-theme="light"] .welcome-page .welcome-section-heading h2,
+html:not([data-theme]) .welcome-page .welcome-section-heading h2 { color: #fff; }
+html[data-theme="light"] .welcome-page .welcome-stat strong,
+html:not([data-theme]) .welcome-page .welcome-stat strong { color: #10264a; }
+html[data-theme="light"] .welcome-page .welcome-stat small,
+html:not([data-theme]) .welcome-page .welcome-stat small { color: #405979; }
+html[data-theme="light"] .welcome-page .welcome-footer,
+html:not([data-theme]) .welcome-page .welcome-footer { color: #dce9fb; }
+
+@media (max-width: 1100px) {
+  .welcome-page .welcome-topbar { flex-wrap: wrap; gap: 6px 18px; }
+  .welcome-page .welcome-nav { order: 3; flex: 0 0 100%; justify-content: center; }
+  .welcome-page .welcome-hero { height: auto; min-height: 460px; padding: 30px 5% 24px; }
+  .welcome-page .welcome-hero-content { width: min(64%, 780px); }
+  .welcome-page .welcome-features { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .welcome-page .welcome-role-grid { width: min(100%, 900px); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .welcome-page .welcome-roles-section { padding-top: 16px; padding-bottom: 25px; }
+  .welcome-page .welcome-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .welcome-page .welcome-topbar { padding: 10px 4%; }
+  .welcome-page .welcome-nav { justify-content: flex-start; gap: 20px; overflow-x: auto; scrollbar-width: thin; }
+  .welcome-page .welcome-nav a { min-height: 42px; }
+  .welcome-page .welcome-hero { min-height: 0; padding: 26px 5% 24px; }
+  .welcome-page .welcome-hero-content { width: min(100%, 680px); }
+  .welcome-page .welcome-hero-content h1 { font-size: clamp(48px, 8vw, 64px); }
+  .welcome-page .welcome-description { max-width: 620px; }
+  .welcome-page .welcome-features { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 0; padding: 13px 8px; }
+  .welcome-page .welcome-feature:nth-child(2) { border-right: 0; }
+  .welcome-page .welcome-feature:nth-child(3) { padding-top: 8px; }
+  .welcome-page .welcome-feature:nth-child(4) { padding-top: 8px; }
+  .welcome-page .welcome-visual-label { top: 8%; left: 65%; font-size: 20px; }
+  .welcome-page .welcome-roles-section { min-height: 0; }
+  .welcome-page .welcome-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .welcome-page .welcome-stat:nth-child(2) { border-right: 0; }
+  .welcome-page .welcome-stat:nth-child(1), .welcome-page .welcome-stat:nth-child(2) { border-bottom: 1px solid rgba(205, 224, 255, .24); }
+}
+@media (max-width: 560px) {
+  .welcome-page .welcome-topbar { gap: 8px; }
+  .welcome-page .welcome-brand { flex: 1 1 auto; }
+  .welcome-page .welcome-brand-icon { width: 50px; height: 43px; flex-basis: 50px; transform: scale(.8); transform-origin: left center; margin-right: -9px; }
+  .welcome-page .welcome-brand-text { font-size: 23px; }
+  .welcome-page .welcome-brand-text small { font-size: 8px; }
+  .welcome-page .welcome-theme-toggle { min-height: 34px; }
+  .welcome-page .welcome-nav { gap: 17px; }
+  .welcome-page .welcome-nav a { gap: 6px; font-size: 12px; }
+  .welcome-page .welcome-hero { padding: 23px 5% 18px; }
+  .welcome-page .welcome-hero-content h1 { font-size: clamp(43px, 12vw, 56px); }
+  .welcome-page .welcome-description { font-size: 14px; }
+  .welcome-page .welcome-eyebrow { white-space: normal; font-size: 10px; }
+  .welcome-page .welcome-feature-icon { width: 46px; height: 46px; border-radius: 15px; }
+  .welcome-page .welcome-feature h3 { font-size: 12px; }
+  .welcome-page .welcome-feature p { font-size: 10px; }
+  .welcome-page .welcome-visual-label { top: 8px; left: auto; right: 5%; font-size: 15px; }
+  .welcome-page .welcome-role-grid { width: min(100%, 390px); grid-template-columns: minmax(0, 1fr); }
+  .welcome-page .welcome-role-card { min-height: 0; padding: 16px 22px; }
+  .welcome-page .welcome-section-heading { margin-bottom: 15px; }
+  .welcome-page .welcome-stats { width: 92%; padding: 5px; }
+  .welcome-page .welcome-stat { justify-content: flex-start; gap: 8px; padding: 10px 8px; }
+  .welcome-page .welcome-stat > span svg { width: 24px; height: 24px; }
+  .welcome-page .welcome-stat strong { font-size: 15px; }
+  .welcome-page .welcome-stat small { font-size: 9px; }
+  .welcome-page .welcome-footer { flex-direction: column; gap: 5px; text-align: center; }
+}
+@media (max-width: 380px) {
+  .welcome-page .welcome-nav { gap: 14px; }
+  .welcome-page .welcome-nav a { font-size: 11px; }
+  .welcome-page .welcome-stat { flex-direction: column; align-items: flex-start; }
+}

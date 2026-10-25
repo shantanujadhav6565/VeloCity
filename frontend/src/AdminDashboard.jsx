@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdminDashboard.css";
+import ConductorManagement from "./ConductorManagement";
 
 const API_URL = "http://localhost:5000/api/auth/driver-requests";
 
@@ -420,6 +421,7 @@ export default function AdminDashboard() {
           </section>
         )}
       </main>
+      <ConductorManagement />
     </div>
   );
 }

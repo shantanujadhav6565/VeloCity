@@ -85,6 +85,8 @@ export default function ConductorDashboard() {
   const [manualCount, setManualCount] = useState("");
   const [manualReason, setManualReason] = useState("");
   const [updatingCrowd, setUpdatingCrowd] = useState(false);
+  const [tripAction, setTripAction] = useState(false);
+  const [selectedStopSequence, setSelectedStopSequence] = useState("");
 
   const loadDashboard = useCallback(async (showLoading = true) => {
     if (!getToken()) {
@@ -110,6 +112,7 @@ export default function ConductorDashboard() {
       setProfile(conductor);
       setBus(assignedBus);
       setTickets(historyResult.tickets || []);
+      setSelectedStopSequence(assignedBus?.currentStopSequence == null ? "" : String(assignedBus.currentStopSequence));
 
       const stops = [...(assignedBus?.routeStops || [])].sort(
         (a, b) => a.sequence - b.sequence
@@ -285,6 +288,27 @@ export default function ConductorDashboard() {
     }
   }
 
+  async function handleTripAction(action) {
+    if (!bus?._id || tripAction) return;
+    setTripAction(true); setSuccess(""); setActionError("");
+    try {
+      const result = await apiRequest(`/buses/${bus._id}/${action}-trip`, { method: "PATCH" });
+      setSuccess(result.message || `Trip ${action === "start" ? "started" : "ended"}.`);
+      await loadDashboard(false);
+    } catch (err) { setActionError(getErrorMessage(err)); }
+    finally { setTripAction(false); }
+  }
+
+  async function handleCurrentStop(event) {
+    event.preventDefault();
+    setSuccess(""); setActionError("");
+    try {
+      const result = await apiRequest("/tickets/current-stop", { method: "PATCH", body: JSON.stringify({ sequence: Number(selectedStopSequence) }) });
+      setSuccess(result.message || "Current stop updated.");
+      await loadDashboard(false);
+    } catch (err) { setActionError(getErrorMessage(err)); }
+  }
+
   if (loading) {
     return (
       <section className="conductor-dashboard">
@@ -297,6 +321,9 @@ export default function ConductorDashboard() {
 
   const stops = [...(bus?.routeStops || [])].sort(
     (a, b) => a.sequence - b.sequence
+  );
+  const boardingStops = stops.filter(
+    (stop) => bus?.currentStopSequence == null || stop.sequence >= bus.currentStopSequence
   );
 
   const validDestinations = stops.filter((stop) => {
@@ -312,11 +339,14 @@ export default function ConductorDashboard() {
   const percentage = capacity
     ? Math.round((count / capacity) * 100)
     : 0;
+  const exactPercentage = capacity ? (count / capacity) * 100 : 0;
 
   const crowdStatus =
-    percentage <= 40
+    exactPercentage >= 100
+      ? "Full"
+      : exactPercentage < 40
       ? "Low"
-      : percentage <= 75
+      : exactPercentage < 75
         ? "Medium"
         : "High";
 
@@ -420,6 +450,22 @@ export default function ConductorDashboard() {
       </div>
 
       <article className="conductor-card conductor-duty-card">
+        <span className="conductor-card-label">TRIP CONTROL</span>
+        <h2>{bus?.tripStatus === "In Progress" ? "Trip in progress" : "Trip not running"}</h2>
+        <p>Start the assigned bus trip before issuing tickets.</p>
+        {bus?.tripStatus === "In Progress" ? <button type="button" className="conductor-refresh" onClick={() => handleTripAction("end")} disabled={tripAction}>{tripAction ? "Ending..." : "End Trip"}</button> : <button type="button" className="conductor-refresh" onClick={() => handleTripAction("start")} disabled={!bus || tripAction}>{tripAction ? "Starting..." : "Start Trip"}</button>}
+      </article>
+
+      <article className="conductor-card conductor-duty-card">
+        <span className="conductor-card-label">ROUTE PROGRESS</span>
+        <h2>Update current stop</h2>
+        <form className="conductor-form" onSubmit={handleCurrentStop}>
+          <label>Current stop<select value={selectedStopSequence} onChange={(event) => setSelectedStopSequence(event.target.value)} required disabled={bus?.tripStatus !== "In Progress"}><option value="" disabled>Select stop</option>{stops.map((stop) => <option key={stop.sequence} value={stop.sequence}>{stop.name}</option>)}</select></label>
+          <button type="submit" disabled={!bus || bus.tripStatus !== "In Progress" || selectedStopSequence === ""}>Update Stop and Crowd</button>
+        </form>
+      </article>
+
+      <article className="conductor-card conductor-duty-card">
         <span className="conductor-card-label">CROWD MANAGEMENT</span>
         <h2>Passenger occupancy</h2>
 
@@ -492,7 +538,7 @@ export default function ConductorDashboard() {
                   }}
                   required
                 >
-                  {stops.map((stop) => (
+                  {boardingStops.map((stop) => (
                     <option key={stop.sequence} value={stop.name}>
                       {stop.name}
                     </option>
@@ -583,7 +629,7 @@ export default function ConductorDashboard() {
 
             <button
               type="submit"
-              disabled={updatingCrowd || !bus}
+              disabled={updatingCrowd || !bus || bus.tripStatus !== "In Progress"}
             >
               Save Crowd Correction
             </button>
@@ -594,7 +640,7 @@ export default function ConductorDashboard() {
               type="button"
               className="conductor-refresh"
               onClick={handleResumeTicketCount}
-              disabled={updatingCrowd}
+              disabled={updatingCrowd || bus?.tripStatus !== "In Progress"}
             >
               Resume Ticket-Based Count
             </button>

@@ -1,55 +1,227 @@
+/* VeloCity — Add Bus form
+   Mobile-first; scoped to the existing Add Bus classes.
+*/
 
 .add-bus-form {
+  --ab-primary: #19324d;
+  --ab-primary-hover: #10253b;
+  --ab-accent: #c96b2c;
+  --ab-page: #f3f6fa;
+  --ab-surface: #ffffff;
+  --ab-text: #172638;
+  --ab-muted: #56677a;
+  --ab-border: #cbd5df;
+  --ab-border-hover: #8999aa;
+  --ab-focus: rgba(25, 50, 77, 0.18);
+  --ab-shadow: 0 8px 28px rgba(16, 37, 59, 0.08);
+
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  padding: 24px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+
+  width: 100%;
+  max-width: 900px;
+  margin: 16px auto;
+  padding: 20px;
+
+  color: var(--ab-text);
+  background: var(--ab-surface);
+  border: 1px solid var(--ab-border);
+  border-top: 3px solid var(--ab-accent);
   border-radius: 12px;
+  box-shadow: var(--ab-shadow);
+}
+
+.add-bus-form,
+.add-bus-form *,
+.add-bus-form *::before,
+.add-bus-form *::after {
+  box-sizing: border-box;
 }
 
 .add-bus-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .add-bus-field label {
-  font-weight: 600;
-  color: #374151;
+  color: var(--ab-text);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.4;
 }
 
-.add-bus-field input {
+.add-bus-field input,
+.add-bus-field select,
+.add-bus-field textarea {
+  display: block;
   width: 100%;
-  padding: 11px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 7px;
-  font-size: 15px;
-  box-sizing: border-box;
+  min-width: 0;
+  min-height: 48px;
+  padding: 11px 13px;
+
+  color: var(--ab-text);
+  background: var(--ab-surface);
+  border: 1px solid var(--ab-border);
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.add-bus-field input:focus {
-  outline: 2px solid #93c5fd;
-  border-color: #2563eb;
+.add-bus-field textarea {
+  min-height: 104px;
+  resize: vertical;
+}
+
+.add-bus-field input::placeholder,
+.add-bus-field textarea::placeholder {
+  color: var(--ab-muted);
+  opacity: 1;
+}
+
+.add-bus-field input:hover:not(:disabled),
+.add-bus-field select:hover:not(:disabled),
+.add-bus-field textarea:hover:not(:disabled) {
+  border-color: var(--ab-border-hover);
+}
+
+.add-bus-field input:focus,
+.add-bus-field select:focus,
+.add-bus-field textarea:focus {
+  outline: none;
+  border-color: var(--ab-primary);
+  box-shadow: 0 0 0 3px var(--ab-focus);
+}
+
+.add-bus-field input:disabled,
+.add-bus-field select:disabled,
+.add-bus-field textarea:disabled {
+  color: var(--ab-muted);
+  background: var(--ab-page);
+  cursor: not-allowed;
+  opacity: 0.75;
 }
 
 .add-bus-form > button {
-  justify-self: start;
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  min-height: 48px;
   padding: 11px 20px;
-  border: none;
-  border-radius: 7px;
+
+  color: #ffffff;
+  background: var(--ab-primary);
+  border: 1px solid var(--ab-primary);
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
   cursor: pointer;
+
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.add-bus-form > button:hover:not(:disabled) {
+  background: var(--ab-primary-hover);
+  box-shadow: 0 4px 12px rgba(16, 37, 59, 0.16);
+}
+
+.add-bus-form > button:focus-visible {
+  outline: 3px solid var(--ab-accent);
+  outline-offset: 3px;
 }
 
 .add-bus-form > button:disabled {
-  opacity: 0.6;
   cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
 }
 
-@media (max-width: 650px) {
+.add-bus-error,
+.add-bus-success {
+  grid-column: 1 / -1;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.add-bus-error {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.add-bus-success {
+  color: #166534;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+@media (min-width: 651px) {
   .add-bus-form {
-    grid-template-columns: 1fr;
-    padding: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+    margin-block: 24px;
+    padding: 32px;
+  }
+
+  .add-bus-form > button {
+    justify-self: start;
+    min-width: 160px;
+  }
+}
+
+/* Applies only if the existing app uses .dark or data-theme="dark". */
+:where(.dark, [data-theme="dark"]) .add-bus-form,
+.add-bus-form:is(.dark, [data-theme="dark"]) {
+  --ab-primary: #83a9d2;
+  --ab-primary-hover: #a4c0de;
+  --ab-accent: #f0a66b;
+  --ab-page: #142131;
+  --ab-surface: #1b2b3d;
+  --ab-text: #edf3f9;
+  --ab-muted: #bac9d8;
+  --ab-border: #40546a;
+  --ab-border-hover: #7790a8;
+  --ab-focus: rgba(131, 169, 210, 0.25);
+  --ab-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+}
+
+:where(.dark, [data-theme="dark"]) .add-bus-form > button,
+.add-bus-form:is(.dark, [data-theme="dark"]) > button {
+  color: #10253b;
+}
+
+:where(.dark, [data-theme="dark"]) .add-bus-error,
+.add-bus-form:is(.dark, [data-theme="dark"]) .add-bus-error {
+  color: #fecaca;
+  background: #451f29;
+  border-color: #87404b;
+}
+
+:where(.dark, [data-theme="dark"]) .add-bus-success,
+.add-bus-form:is(.dark, [data-theme="dark"]) .add-bus-success {
+  color: #bbf7d0;
+  background: #17392e;
+  border-color: #356b51;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .add-bus-field input,
+  .add-bus-field select,
+  .add-bus-field textarea,
+  .add-bus-form > button {
+    transition: none;
   }
 }

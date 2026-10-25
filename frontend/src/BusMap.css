@@ -1,52 +1,95 @@
+/* =========================================
+   VELOCITY — UBER STYLE LIVE MAP
+========================================= */
 
 .uber-map-card {
+  --map-card-bg: #ffffff;
+  --map-text: #172033;
+  --map-muted: #64748b;
+  --map-border: #e2e8f0;
+  --map-soft-bg: #f8fafc;
+  --map-shadow: rgba(15, 23, 42, 0.09);
+
   width: 100%;
+  min-width: 0;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
-  border-radius: 18px;
-  background: #fff;
-  color: #111827;
-  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+  box-sizing: border-box;
+
+  border: 1px solid var(--map-border);
+  border-radius: 20px;
+  background: var(--map-card-bg);
+  color: var(--map-text);
+  box-shadow: 0 10px 32px var(--map-shadow);
+
+  transition: background 0.25s ease, border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
+
+html[data-theme="dark"] .uber-map-card {
+  --map-card-bg: #131e32;
+  --map-text: #f0f5ff;
+  --map-muted: #a3b2c9;
+  --map-border: #293750;
+  --map-soft-bg: #0d1729;
+  --map-shadow: rgba(0, 0, 0, 0.24);
+}
+
+/* MAP HEADER */
 
 .uber-map-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 18px 20px;
+  gap: 16px;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--map-border);
 }
 
 .uber-eyebrow {
-  color: #6b7280;
+  color: var(--map-muted);
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
 }
 
 .uber-map-heading h3 {
-  margin: 5px 0 3px;
-  font-size: 21px;
-  font-weight: 750;
+  margin: 6px 0 4px;
+  color: var(--map-text);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .uber-map-heading p {
   margin: 0;
-  color: #6b7280;
+  color: var(--map-muted);
   font-size: 13px;
+  line-height: 1.6;
 }
 
 .uber-status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 10px;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 9px 12px;
+
+  border: 1px solid #bbf7d0;
   border-radius: 999px;
-  background: #f3f4f6;
-  color: #374151;
+  background: #f0fdf4;
+  color: #166534;
+
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   white-space: nowrap;
+}
+
+html[data-theme="dark"] .uber-status-pill {
+  border-color: #22634f;
+  background: #10372f;
+  color: #86efc2;
 }
 
 .uber-live-dot {
@@ -56,24 +99,35 @@
   flex-shrink: 0;
   border-radius: 50%;
   background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.13);
 }
+
+/* MAP CONTAINER */
 
 .uber-map-container {
   position: relative;
-  height: 430px;
-  background: #e5e7eb;
+  width: 100%;
+  height: 440px;
+  overflow: hidden;
+  background: #e8eef5;
+  isolation: isolate;
 }
 
 .uber-map {
+  position: relative;
+  z-index: 1;
+  display: block;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  background: #e8eef5;
 }
+
+/* CUSTOM LEAFLET MARKERS */
 
 .uber-bus-icon,
 .uber-stop-icon {
-  background: transparent;
-  border: none;
+  background: transparent !important;
+  border: none !important;
 }
 
 .uber-bus-marker {
@@ -82,20 +136,24 @@
   height: 44px;
   align-items: center;
   justify-content: center;
-  border: 3px solid #fff;
+
+  border: 3px solid #ffffff;
   border-radius: 50%;
-  background: #276ef1;
-  box-shadow: 0 3px 12px #0000004d;
-  font-size: 24px;
+  background: linear-gradient(135deg, #3478ff, #174fd0);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.35);
+
+  font-size: 23px;
+  line-height: 1;
 }
 
 .uber-source-marker {
   width: 18px;
   height: 18px;
-  border: 4px solid #fff;
+  box-sizing: border-box;
+  border: 4px solid #ffffff;
   border-radius: 50%;
   background: #16a34a;
-  box-shadow: 0 2px 8px #0000004d;
+  box-shadow: 0 2px 9px rgba(0, 0, 0, 0.35);
 }
 
 .uber-destination-marker {
@@ -104,107 +162,155 @@
   height: 30px;
   align-items: center;
   justify-content: center;
-  border: 3px solid #fff;
+
+  box-sizing: border-box;
+  border: 3px solid #ffffff;
   border-radius: 50% 50% 50% 0;
   background: #dc2626;
-  color: #fff;
+  color: #ffffff;
+
   font-size: 12px;
   font-weight: 800;
-  box-shadow: 0 2px 8px #0000004d;
+  line-height: 1;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+
   transform: rotate(-45deg);
 }
+
+/* MAP NOTICE */
 
 .uber-map-notice {
   position: absolute;
   z-index: 500;
   top: 14px;
   left: 14px;
+
   display: flex;
-  max-width: 260px;
+  max-width: min(260px, calc(100% - 85px));
   flex-direction: column;
   gap: 5px;
-  padding: 12px 14px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 3px 14px #0000001a;
+  padding: 13px 15px;
+
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 13px;
+  background: #ffffff;
+  color: #172033;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.14);
 }
 
 .uber-map-notice strong {
   font-size: 13px;
+  font-weight: 800;
 }
 
 .uber-map-notice span {
-  color: #6b7280;
+  color: #64748b;
   font-size: 12px;
+  line-height: 1.5;
 }
 
 .uber-route-notice {
   position: absolute;
   z-index: 500;
-  right: 12px;
-  bottom: 12px;
-  max-width: calc(100% - 24px);
-  padding: 10px 13px;
-  border-radius: 10px;
+  right: 14px;
+  bottom: 14px;
+
+  max-width: calc(100% - 28px);
+  padding: 11px 15px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
   background: #111827;
-  color: #fff;
+  color: #ffffff;
+
   font-size: 12px;
-  box-shadow: 0 3px 12px #0000002e;
+  line-height: 1.5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
 }
+
+/* RECENTER BUTTON */
 
 .uber-recenter-button {
   position: absolute;
   z-index: 500;
   top: 14px;
   right: 14px;
+
+  display: flex;
   width: 42px;
   height: 42px;
-  border: 1px solid #e5e7eb;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
-  background: #fff;
-  color: #111827;
-  font-size: 27px;
+  background: #ffffff;
+  color: #172033;
+
+  font-size: 25px;
   cursor: pointer;
-  box-shadow: 0 2px 10px #0000001f;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.15);
+
+  transition: background 0.2s ease, transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
+.uber-recenter-button:hover {
+  background: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(15, 23, 42, 0.2);
+}
+
+.uber-recenter-button:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+
+/* TRIP DETAILS */
 
 .uber-trip-details {
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  gap: 0;
+  padding: 22px;
+  background: var(--map-card-bg);
 }
 
 .uber-trip-point {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 14px;
+  min-width: 0;
 }
 
 .uber-trip-point > div {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .uber-trip-point small {
-  color: #6b7280;
+  color: var(--map-muted);
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
 }
 
 .uber-trip-point strong {
   overflow-wrap: anywhere;
+  color: var(--map-text);
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 700;
+  line-height: 1.6;
 }
 
 .uber-trip-source-dot {
   width: 13px;
   height: 13px;
   flex: 0 0 13px;
+  box-sizing: border-box;
   border: 3px solid #16a34a;
   border-radius: 50%;
 }
@@ -213,25 +319,33 @@
   width: 13px;
   height: 13px;
   flex: 0 0 13px;
+  box-sizing: border-box;
   border: 3px solid #dc2626;
   border-radius: 3px;
 }
 
 .uber-trip-connector {
   width: 2px;
-  height: 23px;
+  height: 25px;
   margin: 4px 0 4px 5px;
-  border-left: 2px dashed #d1d5db;
+  border-left: 2px dashed var(--map-border);
 }
+
+/* MAP FOOTER */
 
 .uber-map-footer {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 13px 20px;
-  border-top: 1px solid #f3f4f6;
-  color: #6b7280;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 14px 22px;
+
+  border-top: 1px solid var(--map-border);
+  background: var(--map-soft-bg);
+  color: var(--map-muted);
   font-size: 12px;
+  line-height: 1.6;
 }
 
 .uber-map-footer > span:first-child {
@@ -240,10 +354,106 @@
   gap: 7px;
 }
 
+/* =========================================
+   LEAFLET MAP RENDERING FIX
+========================================= */
+
+.real-map-wrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 450px;
+  min-height: 300px;
+  overflow: hidden;
+  background: #e8eef5;
+  isolation: isolate;
+}
+
+.real-map-wrapper .real-map,
+.real-map {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 300px;
+  background: #e8eef5;
+}
+
+.real-map-wrapper .leaflet-container,
+.real-map .leaflet-container {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  background: #e8eef5;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+.real-map-wrapper .leaflet-pane,
+.real-map-wrapper .leaflet-tile,
+.real-map-wrapper .leaflet-tile-container,
+.real-map-wrapper .leaflet-marker-icon,
+.real-map-wrapper .leaflet-marker-shadow,
+.real-map-wrapper .leaflet-marker-pane,
+.real-map-wrapper .leaflet-overlay-pane,
+.real-map-wrapper .leaflet-shadow-pane {
+  visibility: visible;
+}
+
+.real-map-wrapper .leaflet-tile,
+.real-map .leaflet-tile {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* RESPONSIVE MAP */
+
 @media (max-width: 600px) {
+  .uber-map-card {
+    border-radius: 15px;
+  }
+
   .uber-map-heading {
     align-items: flex-start;
-    padding: 15px;
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .uber-map-heading h3 {
+    font-size: 19px;
+  }
+
+  .uber-map-heading p {
+    font-size: 12px;
+  }
+
+  .uber-status-pill {
+    gap: 6px;
+    padding: 7px 9px;
+    font-size: 10px;
+  }
+
+  .uber-map-container {
+    height: 350px;
+  }
+
+  .uber-trip-details {
+    padding: 17px;
+  }
+
+  .uber-map-footer {
+    padding: 12px 16px;
+    font-size: 11px;
+  }
+
+  .real-map-wrapper {
+    height: 350px;
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 400px) {
+  .uber-map-heading {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .uber-map-heading h3 {
@@ -251,84 +461,46 @@
   }
 
   .uber-status-pill {
-    padding: 7px 8px;
-    font-size: 10px;
+    align-self: flex-start;
   }
 
   .uber-map-container {
-    height: 340px;
+    height: 310px;
   }
 
-  .uber-trip-details {
-    padding: 16px;
+  .uber-map-notice {
+    top: 10px;
+    left: 10px;
+    padding: 10px 12px;
   }
 
-  .uber-map-footer {
-    padding: 12px 15px;
-    font-size: 10px;
+  .uber-recenter-button {
+    top: 10px;
+    right: 10px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .uber-route-notice {
+    right: 10px;
+    bottom: 10px;
+    max-width: calc(100% - 20px);
+  }
+
+  .real-map-wrapper {
+    height: 310px;
   }
 }
 
-/* Fix Leaflet map visibility */
-.real-map-wrapper {
-  position: relative;
-  display: block;
-  width: 100%;
-  min-height: 450px;
-  overflow: hidden;
-}
+/* ACCESSIBILITY */
 
-.real-map {
-  display: block;
-  width: 100% !important;
-  height: 450px !important;
-  min-height: 450px;
-  background: #e5e7eb;
-  z-index: 1;
-}
-
-.real-map .leaflet-pane,
-.real-map .leaflet-tile,
-.real-map .leaflet-marker-icon,
-.real-map .leaflet-marker-shadow {
-  visibility: visible;
-}
-
-.real-map .leaflet-tile {
-  max-width: none !important;
-  max-height: none !important;
-}
-
-.real-map .leaflet-container {
-  font-family: Arial, sans-serif;
-}
-
-/* Leaflet map rendering fix */
-.real-map-wrapper {
-  position: relative;
-  width: 100%;
-  height: 450px;
-  min-height: 450px;
-  overflow: hidden;
-  background: #e5e7eb;
-}
-
-.real-map-wrapper .leaflet-container {
-  width: 100%;
-  height: 450px;
-  min-height: 450px;
-  background: #e5e7eb;
-  font-family: Arial, sans-serif;
-}
-
-.real-map-wrapper .leaflet-tile {
-  visibility: visible !important;
-  max-width: none !important;
-}
-
-.real-map-wrapper .leaflet-pane,
-.real-map-wrapper .leaflet-tile-container,
-.real-map-wrapper .leaflet-marker-pane,
-.real-map-wrapper .leaflet-overlay-pane {
-  visibility: visible !important;
+@media (prefers-reduced-motion: reduce) {
+  .uber-map-card *,
+  .uber-map-card *::before,
+  .uber-map-card *::after,
+  .uber-recenter-button {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

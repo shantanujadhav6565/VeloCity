@@ -1,6 +1,6 @@
 
 const express = require("express");
-const mongoose = require("mongoose");
+const { randomUUID } = require("node:crypto");
 
 const router = express.Router();
 
@@ -11,14 +11,47 @@ const User = require("../models/User");
 const authenticate = require("../middleware/auth");
 const authorize = require("../middleware/authorize");
 
+// Serialize ticket creation per bus within this Node.js process.
+const busIssueQueues = new Map();
+
+async function withBusIssueLock(busId, operation) {
+  const previous = busIssueQueues.get(busId) || Promise.resolve();
+
+  let release;
+  const current = new Promise((resolve) => {
+    release = resolve;
+  });
+
+  busIssueQueues.set(busId, current);
+
+  await previous;
+
+  try {
+    return await operation();
+  } finally {
+    release();
+
+    if (busIssueQueues.get(busId) === current) {
+      busIssueQueues.delete(busId);
+    }
+  }
+}
+
+function createError(message, status = 400) {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+}
+
 // Get the logged-in conductor's profile and assigned bus.
 async function getConductorAndBus(userId) {
   const user = await User.findById(userId).select("-password");
 
   if (!user || user.role !== "Conductor" || !user.conductor) {
-    const error = new Error("Conductor account or profile not found");
-    error.status = 404;
-    throw error;
+    throw createError(
+      "Conductor account or profile not found. Please verify your conductor profile.",
+      404
+    );
   }
 
   const bus = await Bus.findOne({
@@ -26,26 +59,38 @@ async function getConductorAndBus(userId) {
   });
 
   if (!bus) {
-    const error = new Error("No bus is assigned to this conductor");
-    error.status = 404;
-    throw error;
+    throw createError(
+      "No bus is assigned to this conductor. Ask the administrator to assign a bus.",
+      404
+    );
   }
 
   return { user, bus };
 }
 
-// Recalculate passengers onboard at the bus's current stop.
+// Validate and return route stops in sequence order.
+function getSortedStops(bus) {
+  const stops = Array.isArray(bus.routeStops)
+    ? [...bus.routeStops].sort(
+        (a, b) => Number(a.sequence) - Number(b.sequence)
+      )
+    : [];
+
+  return stops;
+}
+
+// Recalculate passengers currently onboard.
 async function recalculateCrowd(bus) {
   if (bus.crowdUpdateMode === "manual") {
-    return bus.currentPassengerCount;
+    return bus.currentPassengerCount || 0;
   }
 
-  const stops = [...(bus.routeStops || [])].sort(
-    (a, b) => a.sequence - b.sequence
-  );
+  const stops = getSortedStops(bus);
 
-  if (!stops.length) {
-    throw new Error("Bus route stops are not configured");
+  // No configured route: keep the existing crowd count and let
+  // the dashboard display the route configuration problem.
+  if (stops.length === 0) {
+    return bus.currentPassengerCount || 0;
   }
 
   const currentSequence =
@@ -56,19 +101,83 @@ async function recalculateCrowd(bus) {
     status: "Active",
     boardingStopSequence: { $lte: currentSequence },
     destinationStopSequence: { $gt: currentSequence },
-  }).select("passengerCount");
+  })
+    .select("passengerCount")
+    .lean();
 
   const passengerCount = tickets.reduce(
-    (total, ticket) => total + ticket.passengerCount,
+    (total, ticket) => total + Number(ticket.passengerCount || 0),
     0
   );
 
-  bus.currentPassengerCount = passengerCount;
+  bus.currentPassengerCount = Math.min(
+    Number(bus.capacity || 0),
+    Math.max(0, passengerCount)
+  );
+
   bus.crowdLastUpdated = new Date();
 
   await bus.save();
 
-  return passengerCount;
+  return bus.currentPassengerCount;
+}
+
+// Validate capacity at every relevant point along the journey.
+async function assertCapacityForTicket(
+  bus,
+  boardingSequence,
+  destinationSequence,
+  requestedCount
+) {
+  if (!Number.isFinite(bus.capacity) || bus.capacity < 1) {
+    throw createError("The assigned bus has an invalid capacity.", 409);
+  }
+
+  const activeTickets = await Ticket.find({
+    bus: bus._id,
+    status: "Active",
+  })
+    .select(
+      "boardingStopSequence destinationStopSequence passengerCount"
+    )
+    .lean();
+
+  const candidateSequences = new Set([boardingSequence]);
+
+  for (const ticket of activeTickets) {
+    if (
+      ticket.boardingStopSequence >= boardingSequence &&
+      ticket.boardingStopSequence < destinationSequence
+    ) {
+      candidateSequences.add(ticket.boardingStopSequence);
+    }
+
+    if (
+      ticket.destinationStopSequence >= boardingSequence &&
+      ticket.destinationStopSequence < destinationSequence
+    ) {
+      candidateSequences.add(ticket.destinationStopSequence);
+    }
+  }
+
+  for (const sequence of candidateSequences) {
+    const onboard = activeTickets.reduce((total, ticket) => {
+      const isOnboard =
+        ticket.boardingStopSequence <= sequence &&
+        ticket.destinationStopSequence > sequence;
+
+      return total + (
+        isOnboard ? Number(ticket.passengerCount || 0) : 0
+      );
+    }, 0);
+
+    if (onboard + requestedCount > bus.capacity) {
+      throw createError(
+        `This ticket would exceed bus capacity (${bus.capacity}) between route stops.`,
+        409
+      );
+    }
+  }
 }
 
 // GET /api/tickets/my-bus
@@ -81,14 +190,27 @@ router.get(
       const userId = req.user._id || req.user.id;
       const { bus } = await getConductorAndBus(userId);
 
+      if (
+        bus.crowdUpdateMode !== "manual" &&
+        bus.tripStatus === "In Progress"
+      ) {
+        await recalculateCrowd(bus);
+      }
+
       return res.json({
         success: true,
         bus,
+        routeConfigured: getSortedStops(bus).length >= 2,
+        message:
+          getSortedStops(bus).length >= 2
+            ? "Assigned bus loaded successfully."
+            : "Assigned bus has no configured route stops.",
         crowd: {
-          passengerCount: bus.currentPassengerCount,
+          passengerCount: bus.currentPassengerCount || 0,
           availableSeats: Math.max(
             0,
-            bus.capacity - bus.currentPassengerCount
+            Number(bus.capacity || 0) -
+              Number(bus.currentPassengerCount || 0)
           ),
           mode: bus.crowdUpdateMode || "tickets",
         },
@@ -98,7 +220,88 @@ router.get(
 
       return res.status(error.status || 500).json({
         success: false,
-        message: error.message || "Failed to load assigned bus",
+        message: error.message || "Failed to load assigned bus.",
+      });
+    }
+  }
+);
+
+// PATCH /api/tickets/current-stop
+router.patch(
+  "/current-stop",
+  authenticate,
+  authorize("Conductor"),
+  async (req, res) => {
+    try {
+      const userId = req.user._id || req.user.id;
+      const sequence = req.body?.sequence;
+
+      if (!Number.isInteger(sequence) || sequence < 0) {
+        return res.status(400).json({
+          success: false,
+          message: "A valid route stop sequence is required.",
+        });
+      }
+
+      const { bus } = await getConductorAndBus(userId);
+
+      if (bus.tripStatus !== "In Progress") {
+        return res.status(409).json({
+          success: false,
+          message: "Start the trip before updating its current stop.",
+        });
+      }
+
+      const stops = getSortedStops(bus);
+
+      if (stops.length < 2) {
+        return res.status(409).json({
+          success: false,
+          message: "Configure at least two route stops before updating progress.",
+        });
+      }
+
+      const stop = stops.find(
+        (item) => Number(item.sequence) === sequence
+      );
+
+      if (!stop) {
+        return res.status(400).json({
+          success: false,
+          message: "Select a stop from the assigned bus route.",
+        });
+      }
+
+      if (
+        bus.currentStopSequence != null &&
+        sequence < bus.currentStopSequence
+      ) {
+        return res.status(409).json({
+          success: false,
+          message: "The current stop cannot move backwards.",
+        });
+      }
+
+      bus.currentStopSequence = sequence;
+      bus.currentStopName = stop.name;
+
+      await bus.save();
+
+      if (bus.crowdUpdateMode !== "manual") {
+        await recalculateCrowd(bus);
+      }
+
+      return res.json({
+        success: true,
+        message: `Current stop updated to ${stop.name}.`,
+        bus,
+      });
+    } catch (error) {
+      console.error("Update current stop error:", error);
+
+      return res.status(error.status || 500).json({
+        success: false,
+        message: error.message || "Failed to update current stop.",
       });
     }
   }
@@ -117,82 +320,124 @@ router.post(
         boardingStop,
         destinationStop,
         passengerCount = 1,
-      } = req.body;
+      } = req.body || {};
 
-      if (!boardingStop || !destinationStop) {
+      if (
+        typeof boardingStop !== "string" ||
+        !boardingStop.trim() ||
+        typeof destinationStop !== "string" ||
+        !destinationStop.trim()
+      ) {
         return res.status(400).json({
           success: false,
-          message: "Boarding stop and destination stop are required",
+          message: "Boarding stop and destination stop are required.",
         });
       }
 
       if (
-        !Number.isInteger(Number(passengerCount)) ||
-        Number(passengerCount) < 1
+        typeof passengerCount !== "number" ||
+        !Number.isInteger(passengerCount) ||
+        passengerCount < 1
       ) {
         return res.status(400).json({
           success: false,
-          message: "Passenger count must be a positive whole number",
+          message: "Passenger count must be a positive whole number.",
         });
       }
 
       const { user, bus } = await getConductorAndBus(userId);
 
       if (bus.tripStatus !== "In Progress") {
-        return res.status(400).json({
+        return res.status(409).json({
           success: false,
-          message: "Start the bus trip before issuing tickets",
+          message: "Start the bus trip before issuing tickets.",
         });
       }
 
-      const stops = [...(bus.routeStops || [])].sort(
-        (a, b) => a.sequence - b.sequence
-      );
+      const stops = getSortedStops(bus);
+
+      if (stops.length < 2) {
+        return res.status(409).json({
+          success: false,
+          message: "This bus needs at least two configured route stops.",
+        });
+      }
 
       const boarding = stops.find(
-        (stop) => stop.name === boardingStop
+        (stop) => stop.name === boardingStop.trim()
       );
 
       const destination = stops.find(
-        (stop) => stop.name === destinationStop
+        (stop) => stop.name === destinationStop.trim()
       );
 
       if (!boarding || !destination) {
         return res.status(400).json({
           success: false,
-          message: "Select stops from this bus's configured route",
+          message: "Select stops from this bus's configured route.",
+        });
+      }
+
+      if (
+        bus.currentStopSequence != null &&
+        boarding.sequence < bus.currentStopSequence
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Boarding stop cannot be behind the bus's current stop.",
         });
       }
 
       if (destination.sequence <= boarding.sequence) {
         return res.status(400).json({
           success: false,
-          message: "Destination must come after the boarding stop",
+          message: "Destination must come after the boarding stop.",
         });
       }
 
-      const ticket = await Ticket.create({
-        ticketNumber:
-          `VC-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
-        bus: bus._id,
-        conductor: user._id,
-        boardingStop: boarding.name,
-        boardingStopSequence: boarding.sequence,
-        destinationStop: destination.name,
-        destinationStopSequence: destination.sequence,
-        passengerCount: Number(passengerCount),
-        status: "Active",
-      });
+      const { ticket, passengerTotal } = await withBusIssueLock(
+        bus._id.toString(),
+        async () => {
+          await assertCapacityForTicket(
+            bus,
+            boarding.sequence,
+            destination.sequence,
+            passengerCount
+          );
 
-      const passengerTotal = await recalculateCrowd(bus);
+          const createdTicket = await Ticket.create({
+            ticketNumber: `VC-${randomUUID()
+              .slice(0, 12)
+              .toUpperCase()}`,
+            bus: bus._id,
+            conductor: user._id,
+            boardingStop: boarding.name,
+            boardingStopSequence: boarding.sequence,
+            destinationStop: destination.name,
+            destinationStopSequence: destination.sequence,
+            passengerCount,
+            status: "Active",
+          });
+
+          const total = await recalculateCrowd(bus);
+
+          return {
+            ticket: createdTicket,
+            passengerTotal: total,
+          };
+        }
+      );
 
       return res.status(201).json({
         success: true,
-        message: "Ticket issued successfully",
+        message: "Ticket issued successfully.",
         ticket,
         crowd: {
           passengerCount: passengerTotal,
-          availableSeats: Math.max(0, bus.capacity - passengerTotal),
+          availableSeats: Math.max(
+            0,
+            bus.capacity - passengerTotal
+          ),
           mode: bus.crowdUpdateMode || "tickets",
         },
       });
@@ -201,7 +446,7 @@ router.post(
 
       return res.status(error.status || 500).json({
         success: false,
-        message: error.message || "Failed to issue ticket",
+        message: error.message || "Failed to issue ticket.",
       });
     }
   }
@@ -232,7 +477,7 @@ router.get(
 
       return res.status(error.status || 500).json({
         success: false,
-        message: error.message || "Failed to load ticket history",
+        message: error.message || "Failed to load ticket history.",
       });
     }
   }
@@ -246,7 +491,7 @@ router.patch(
   async (req, res) => {
     try {
       const userId = req.user._id || req.user.id;
-      const { passengerCount, reason } = req.body;
+      const { passengerCount, reason } = req.body || {};
 
       if (
         !Number.isInteger(passengerCount) ||
@@ -254,29 +499,44 @@ router.patch(
       ) {
         return res.status(400).json({
           success: false,
-          message: "Passenger count must be a non-negative whole number",
+          message: "Passenger count must be a non-negative whole number.",
         });
       }
 
       if (!reason || !String(reason).trim()) {
         return res.status(400).json({
           success: false,
-          message: "Please provide a reason for the crowd correction",
+          message: "Please provide a reason for the crowd correction.",
+        });
+      }
+
+      if (String(reason).trim().length > 300) {
+        return res.status(400).json({
+          success: false,
+          message: "Reason cannot exceed 300 characters.",
         });
       }
 
       const { bus } = await getConductorAndBus(userId);
 
+      if (bus.tripStatus !== "In Progress") {
+        return res.status(409).json({
+          success: false,
+          message: "Crowd correction is available only during an active trip.",
+        });
+      }
+
       if (passengerCount > bus.capacity) {
         return res.status(400).json({
           success: false,
-          message: `Passenger count cannot exceed bus capacity (${bus.capacity})`,
+          message: `Passenger count cannot exceed bus capacity (${bus.capacity}).`,
         });
       }
 
       bus.crowdUpdateMode = "manual";
       bus.currentPassengerCount = passengerCount;
       bus.crowdLastUpdated = new Date();
+
       bus.manualCrowdUpdate = {
         passengerCount,
         reason: String(reason).trim(),
@@ -288,7 +548,7 @@ router.patch(
 
       return res.json({
         success: true,
-        message: "Crowd count corrected manually",
+        message: "Crowd count corrected manually.",
         crowd: {
           passengerCount: bus.currentPassengerCount,
           availableSeats: Math.max(
@@ -304,7 +564,7 @@ router.patch(
 
       return res.status(error.status || 500).json({
         success: false,
-        message: error.message || "Failed to update crowd count",
+        message: error.message || "Failed to update crowd count.",
       });
     }
   }
@@ -320,6 +580,20 @@ router.patch(
       const userId = req.user._id || req.user.id;
       const { bus } = await getConductorAndBus(userId);
 
+      if (bus.tripStatus !== "In Progress") {
+        return res.status(409).json({
+          success: false,
+          message: "Ticket-based crowd calculation can be resumed only during an active trip.",
+        });
+      }
+
+      if (getSortedStops(bus).length === 0) {
+        return res.status(409).json({
+          success: false,
+          message: "Configure the bus route stops before resuming ticket-based crowd calculation.",
+        });
+      }
+
       bus.crowdUpdateMode = "tickets";
       await bus.save();
 
@@ -327,7 +601,7 @@ router.patch(
 
       return res.json({
         success: true,
-        message: "Crowd count is now calculated from active tickets",
+        message: "Crowd count is now calculated from active tickets.",
         crowd: {
           passengerCount: passengerTotal,
           availableSeats: Math.max(
@@ -342,7 +616,7 @@ router.patch(
 
       return res.status(error.status || 500).json({
         success: false,
-        message: error.message || "Failed to resume ticket calculation",
+        message: error.message || "Failed to resume ticket calculation.",
       });
     }
   }

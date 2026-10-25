@@ -335,8 +335,9 @@ busSchema.virtual("crowdStatus").get(function () {
   const percentage =
     (this.currentPassengerCount / this.capacity) * 100;
 
-  if (percentage <= 40) return "Low";
-  if (percentage <= 75) return "Medium";
+  if (percentage >= 100) return "Full";
+  if (percentage < 40) return "Low";
+  if (percentage < 75) return "Medium";
   return "High";
 });
 

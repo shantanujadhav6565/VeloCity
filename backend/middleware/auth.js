@@ -60,7 +60,7 @@ async function authenticate(req, res, next) {
 
     // 5. Find user in MongoDB
     const user = await User.findById(payload.sub).select(
-      "_id phone role driver isActive"
+      "_id phone role driver conductor isActive approvalStatus"
     );
 // console.log("AUTH USER:", user?.phone, user?.role);
     // 6. Check user account status
@@ -69,6 +69,10 @@ async function authenticate(req, res, next) {
         success: false,
         message: "Account is unavailable",
       });
+    }
+
+    if (user.role === "Conductor" && (user.approvalStatus !== "Approved" || !user.conductor)) {
+      return res.status(403).json({ success: false, message: "Approved Conductor profile required" });
     }
 
     // 7. Attach authenticated user to request

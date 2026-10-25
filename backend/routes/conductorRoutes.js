@@ -1,11 +1,69 @@
+
 const express = require("express");
 const router = express.Router();
 
 const User = require("../models/User");
+const Conductor = require("../models/Conductor");
 const authenticate = require("../middleware/auth");
 const authorize = require("../middleware/authorize");
 
+// ==================================================
+// GET ALL CONDUCTORS — ADMIN
+// GET /api/conductors
+// ==================================================
+
+router.get(
+  "/",
+  authenticate,
+  authorize("Admin"),
+  async (req, res) => {
+    try {
+      const conductors = await Conductor.find()
+        .sort({ createdAt: -1 })
+        .lean();
+
+      // Only return conductors linked to approved, active accounts.
+      const approvedUsers = await User.find({
+        role: "Conductor",
+        approvalStatus: "Approved",
+        isActive: true,
+      })
+        .select("conductor")
+        .lean();
+
+      const approvedConductorIds = new Set(
+        approvedUsers
+          .filter((user) => user.conductor)
+          .map((user) => user.conductor.toString())
+      );
+
+      const availableConductors = conductors.filter(
+        (conductor) =>
+          approvedConductorIds.has(conductor._id.toString()) &&
+          conductor.status !== "Inactive"
+      );
+
+      return res.status(200).json({
+        success: true,
+        count: availableConductors.length,
+        conductors: availableConductors,
+      });
+    } catch (error) {
+      console.error("Fetch conductors error:", error.message);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch conductors",
+      });
+    }
+  }
+);
+
+// ==================================================
+// GET LOGGED-IN CONDUCTOR PROFILE
 // GET /api/conductors/me
+// ==================================================
+
 router.get(
   "/me",
   authenticate,
@@ -43,7 +101,7 @@ router.get(
         conductor: user.conductor,
       });
     } catch (error) {
-      console.error("Get conductor profile error:", error);
+      console.error("Get conductor profile error:", error.message);
 
       return res.status(500).json({
         success: false,

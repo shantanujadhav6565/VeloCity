@@ -11,16 +11,21 @@ import {
 import AddBus from "./AddBus";
 import AdminDashboard from "./AdminDashboard";
 import DriverSignup from "./DriverSignup";
+import ConductorSignup from "./ConductorSignup";
 import DriverLogin from "./DriverLogin";
 import RoleSelection from "./RoleSelection";
 import ProtectedRoute from "./ProtectedRoute";
 import BusMap from "./BusMap";
 import DriverDashboard from "./DriverDashboard";
 import DriverAssignment from "./DriverAssignment";
+import ConductorAssignment from "./ConductorAssignment";
 import ConductorDashboard from "./ConductorDashboard";
 import Signup from "./Signup";
 import Login from "./Login";
 import "./App.css";
+import "./RoleSelection.css";
+import "./DesignSystem.css";
+import "./WelcomeScene.css";
 
 const API_URL = "http://localhost:5000/api/buses";
 const PASSENGER_TRIP_API =
@@ -106,6 +111,12 @@ const menuItems = [
     roles: ["Admin"],
   },
   {
+    path: "/assign-conductor",
+    label: "Bus–Conductor Assignment",
+    icon: "⇄",
+    roles: ["Admin"],
+  },
+  {
     path: "/admin",
     label: "Admin Dashboard",
     icon: "▦",
@@ -166,6 +177,7 @@ function HomePage() {
         }
 
         const data = await response.json();
+
         const busList = Array.isArray(data.buses)
           ? data.buses
           : [];
@@ -300,6 +312,7 @@ function HomePage() {
     }
 
     setSelectedBus(foundBus);
+
     setSearchMessage(
       `Bus ${foundBus.busNumber} found successfully!`
     );
@@ -561,6 +574,7 @@ function HomePage() {
 
             <div className="road">
               <div className="road-line" />
+
               <div className="illustration-bus">
                 <span className="bus-window" />
                 <span className="bus-wheel wheel-one" />
@@ -574,10 +588,12 @@ function HomePage() {
 
           <div className="floating-card card-bottom">
             <div className="mini-map-icon">⌖</div>
+
             <div>
               <small>Travel made simple</small>
               <strong>Your city, connected.</strong>
             </div>
+
             <span className="arrow-circle">↗</span>
           </div>
         </div>
@@ -615,7 +631,9 @@ function HomePage() {
                 disabled={tripActionLoading}
                 onClick={handleEndTrip}
               >
-                {tripActionLoading ? "Please wait..." : "End My Trip"}
+                {tripActionLoading
+                  ? "Please wait..."
+                  : "End My Trip"}
               </button>
             </>
           ) : (
@@ -639,7 +657,9 @@ function HomePage() {
             <span className="section-label">
               YOUR JOURNEY, SIMPLIFIED
             </span>
+
             <h2>Your bus dashboard.</h2>
+
             <p>
               View the selected bus details retrieved from the database.
             </p>
@@ -658,6 +678,7 @@ function HomePage() {
                 <span className="map-label">ROUTE OVERVIEW</span>
                 <h3>Explore your route</h3>
               </div>
+
               <span className="map-pin-icon">⌖</span>
             </div>
 
@@ -706,14 +727,53 @@ function HomePage() {
 
                 <div className="info-row">
                   <div className="info-icon">↗</div>
+
                   <div className="info-text">
                     <span>Route</span>
                     <strong>{selectedBus.route}</strong>
                   </div>
                 </div>
 
+                {isPassenger && (
+                  <div className="info-row">
+                    <div className="info-icon">♧</div>
+
+                    <div className="info-text">
+                      <span>Passenger crowd</span>
+
+                      <strong>
+                        {selectedBus.currentPassengerCount ?? 0} /{" "}
+                        {selectedBus.capacity ?? 50} ·{" "}
+                        {selectedBus.crowdStatus || "Low"} (
+                        {selectedBus.crowdPercentage ?? 0}%)
+                      </strong>
+
+                      <small>
+                        {Math.max(
+                          0,
+                          (selectedBus.capacity ?? 50) -
+                            (selectedBus.currentPassengerCount ?? 0)
+                        )}{" "}
+                        seats available ·{" "}
+                        {selectedBus.currentStopName ||
+                          "Current stop unavailable"}
+                      </small>
+
+                      <small>
+                        Updated{" "}
+                        {selectedBus.crowdLastUpdated
+                          ? new Date(
+                              selectedBus.crowdLastUpdated
+                            ).toLocaleTimeString()
+                          : "Not yet reported"}
+                      </small>
+                    </div>
+                  </div>
+                )}
+
                 <div className="info-row">
                   <div className="info-icon green-text">◷</div>
+
                   <div className="info-text">
                     <span>Current status</span>
                     <strong>{selectedBus.status}</strong>
@@ -722,8 +782,10 @@ function HomePage() {
 
                 <div className="info-row">
                   <div className="info-icon orange-text">⌖</div>
+
                   <div className="info-text">
                     <span>GPS coordinates</span>
+
                     <strong>
                       {selectedBus.latitude != null &&
                       selectedBus.longitude != null
@@ -769,16 +831,20 @@ function HomePage() {
         <div className="features-heading">
           <span className="section-label">AVAILABLE BUSES</span>
           <h2>Choose your bus.</h2>
+
           <p>
             Select a bus to view its route and current database status.
           </p>
         </div>
 
         {loading ? (
-          <div className="empty-state">Loading available buses...</div>
+          <div className="empty-state">
+            Loading available buses...
+          </div>
         ) : error && buses.length === 0 ? (
           <div className="empty-state">
             Unable to load buses. Please check the backend.
+
             <button
               type="button"
               className="search-button"
@@ -798,7 +864,9 @@ function HomePage() {
             {buses.map((bus) => (
               <article
                 className={`feature-card bus-list-card ${
-                  selectedBus?._id === bus._id ? "bus-selected" : ""
+                  selectedBus?._id === bus._id
+                    ? "bus-selected"
+                    : ""
                 }`}
                 key={bus._id}
               >
@@ -806,7 +874,9 @@ function HomePage() {
                   <div className="feature-icon icon-blue">▰</div>
 
                   <span
-                    className={`demo-pill ${getStatusClass(bus.status)}`}
+                    className={`demo-pill ${getStatusClass(
+                      bus.status
+                    )}`}
                   >
                     {bus.status}
                   </span>
@@ -815,6 +885,36 @@ function HomePage() {
                 <span className="map-label">VELOCITY BUS</span>
                 <h3>Bus {bus.busNumber}</h3>
                 <p>{bus.route}</p>
+
+                {isPassenger && (
+                  <div className="bus-crowd-summary">
+                    <strong>
+                      {bus.currentPassengerCount ?? 0}/
+                      {bus.capacity ?? 50} passengers ·{" "}
+                      {bus.crowdStatus || "Low"}
+                    </strong>
+
+                    <span>
+                      {Math.max(
+                        0,
+                        (bus.capacity ?? 50) -
+                          (bus.currentPassengerCount ?? 0)
+                      )}{" "}
+                      seats · {bus.crowdPercentage ?? 0}% occupied
+                    </span>
+
+                    <span>
+                      {bus.currentStopName ||
+                        "Current stop unavailable"}{" "}
+                      · Updated{" "}
+                      {bus.crowdLastUpdated
+                        ? new Date(
+                            bus.crowdLastUpdated
+                          ).toLocaleTimeString()
+                        : "not reported"}
+                    </span>
+                  </div>
+                )}
 
                 <button
                   type="button"
@@ -853,12 +953,16 @@ function HomePage() {
         )}
       </section>
 
-      <section id="features" className="features-section features-extra">
+      <section
+        id="features"
+        className="features-section features-extra"
+      >
         <div className="features-heading">
           <span className="section-label">BUILT FOR PASSENGERS</span>
           <h2>A better way to get there.</h2>
+
           <p>
-            Features planned for a smarter public transport experience.
+            Live route and passenger information from the bus service.
           </p>
         </div>
 
@@ -876,7 +980,8 @@ function HomePage() {
             <div className="feature-icon icon-green">◷</div>
             <h3>Arrival Predictions</h3>
             <p>
-              Estimate arrival times when route and live location data are available.
+              Estimate arrival times when route and live location data
+              are available.
             </p>
             <span className="feature-link">Planned feature ↗</span>
           </article>
@@ -885,16 +990,20 @@ function HomePage() {
             <div className="feature-icon icon-orange">♧</div>
             <h3>Crowd Updates</h3>
             <p>
-              Display passenger crowd levels when crowd reporting is connected.
+              Check ticket-derived passenger counts, available seats
+              and crowd status as buses update.
             </p>
-            <span className="feature-link">Planned feature ↗</span>
+            <span className="feature-link">
+              Crowd updates enabled ↗
+            </span>
           </article>
 
           <article className="feature-card">
             <div className="feature-icon icon-purple">⇄</div>
             <h3>Route Information</h3>
             <p>
-              Expand route data to show stops, directions and destinations.
+              Expand route data to show stops, directions and
+              destinations.
             </p>
             <span className="feature-link">Planned feature ↗</span>
           </article>
@@ -923,7 +1032,10 @@ function TrackingPage() {
       }
 
       const data = await response.json();
-      const busList = Array.isArray(data.buses) ? data.buses : [];
+
+      const busList = Array.isArray(data.buses)
+        ? data.buses
+        : [];
 
       setBuses(busList);
 
@@ -947,7 +1059,10 @@ function TrackingPage() {
   useEffect(() => {
     fetchBuses();
 
-    const intervalId = setInterval(fetchBuses, REFRESH_INTERVAL);
+    const intervalId = setInterval(
+      fetchBuses,
+      REFRESH_INTERVAL
+    );
 
     return () => clearInterval(intervalId);
   }, [fetchBuses]);
@@ -959,13 +1074,17 @@ function TrackingPage() {
     <section className="portal-page">
       <span className="section-label">LIVE BUS INFORMATION</span>
       <h1>Bus Tracking</h1>
-      <p>Select a bus to view its route and latest coordinates.</p>
+
+      <p>
+        Select a bus to view its route and latest coordinates.
+      </p>
 
       {loading ? (
         <p>Loading buses...</p>
       ) : error ? (
         <div className="portal-empty">
           {error}
+
           <button
             type="button"
             className="search-button"
@@ -975,10 +1094,15 @@ function TrackingPage() {
           </button>
         </div>
       ) : buses.length === 0 ? (
-        <div className="portal-empty">No buses available.</div>
+        <div className="portal-empty">
+          No buses available.
+        </div>
       ) : (
         <>
-          <label className="portal-select-label" htmlFor="tracking-bus">
+          <label
+            className="portal-select-label"
+            htmlFor="tracking-bus"
+          >
             Select bus
           </label>
 
@@ -986,7 +1110,9 @@ function TrackingPage() {
             id="tracking-bus"
             className="portal-select"
             value={selectedBusId}
-            onChange={(event) => setSelectedBusId(event.target.value)}
+            onChange={(event) =>
+              setSelectedBusId(event.target.value)
+            }
           >
             {buses.map((bus) => (
               <option key={bus._id} value={bus._id}>
@@ -1001,6 +1127,7 @@ function TrackingPage() {
                 <strong>Bus {selectedBus.busNumber}</strong>
                 <span>Route: {selectedBus.route}</span>
                 <span>Status: {selectedBus.status}</span>
+
                 <span>
                   GPS: {selectedBus.latitude ?? "—"},{" "}
                   {selectedBus.longitude ?? "—"}
@@ -1031,6 +1158,7 @@ function App() {
 
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem("velocity-theme");
+
     return savedTheme === "dark" ? "dark" : "light";
   });
 
@@ -1045,18 +1173,21 @@ function App() {
     );
   };
 
-  // Refresh stored user when navigating.
+  // Refresh stored user when navigating
   useEffect(() => {
     setUser(getStoredUser());
     setSidebarOpen(false);
   }, [location.pathname]);
 
-  // Listen for login/logout events in the same browser tab.
+  // Listen for login/logout events
   useEffect(() => {
     const refreshUser = () => setUser(getStoredUser());
 
     window.addEventListener("storage", refreshUser);
-    window.addEventListener("velocity-auth-changed", refreshUser);
+    window.addEventListener(
+      "velocity-auth-changed",
+      refreshUser
+    );
 
     return () => {
       window.removeEventListener("storage", refreshUser);
@@ -1067,7 +1198,7 @@ function App() {
     };
   }, []);
 
-  // Close sidebar with Escape.
+  // Close sidebar with Escape
   useEffect(() => {
     if (!sidebarOpen) return undefined;
 
@@ -1087,6 +1218,7 @@ function App() {
   const handleLogout = () => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
+
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
@@ -1094,6 +1226,7 @@ function App() {
     setUser(null);
 
     window.dispatchEvent(new Event("velocity-auth-changed"));
+
     navigate("/", { replace: true });
   };
 
@@ -1103,13 +1236,29 @@ function App() {
     <Routes>
       {/* PUBLIC ROUTES */}
 
-      <Route path="/" element={<RoleSelection />} />
+      <Route
+        path="/"
+        element={<RoleSelection theme={theme} onToggleTheme={toggleTheme} />}
+      />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/admin/login" element={<Login />} />
       <Route path="/conductor/login" element={<Login />} />
-      <Route path="/driver/signup" element={<DriverSignup />} />
-      <Route path="/driver/login" element={<DriverLogin />} />
+
+      <Route
+        path="/driver/signup"
+        element={<DriverSignup />}
+      />
+
+      <Route
+        path="/conductor/signup"
+        element={<ConductorSignup />}
+      />
+
+      <Route
+        path="/driver/login"
+        element={<DriverLogin />}
+      />
 
       {/* PROTECTED APP LAYOUT */}
 
@@ -1134,7 +1283,6 @@ function App() {
                 className={`portal-sidebar ${
                   sidebarOpen ? "is-open" : ""
                 }`}
-                aria-hidden={!sidebarOpen}
               >
                 <NavLink
                   to={defaultPath}
@@ -1143,13 +1291,16 @@ function App() {
                   tabIndex={sidebarOpen ? 0 : -1}
                 >
                   <span className="portal-logo">V</span>
+
                   <span className="portal-brand-text">
                     Velo<strong>City</strong>
                     <small>SMART TRANSIT</small>
                   </span>
                 </NavLink>
 
-                <p className="portal-menu-title">MAIN MENU</p>
+                <p className="portal-menu-title">
+                  MAIN MENU
+                </p>
 
                 <nav className="portal-nav">
                   {menuItems
@@ -1172,6 +1323,7 @@ function App() {
                         <span className="portal-nav-icon">
                           {item.icon}
                         </span>
+
                         <span>{item.label}</span>
                       </NavLink>
                     ))}
@@ -1180,14 +1332,20 @@ function App() {
                 <div className="portal-sidebar-footer">
                   <span className="portal-online-dot" />
                   <span>VeloCity</span>
-                  <small>{user?.firstName || user?.role}</small>
+
+                  <small>
+                    {user?.firstName || user?.role}
+                  </small>
 
                   <button
                     type="button"
                     className="search-button"
                     onClick={handleLogout}
                     tabIndex={sidebarOpen ? 0 : -1}
-                    style={{ marginTop: "12px", width: "100%" }}
+                    style={{
+                      marginTop: "12px",
+                      width: "100%",
+                    }}
                   >
                     Logout
                   </button>
@@ -1212,7 +1370,10 @@ function App() {
                   </button>
 
                   <div className="portal-topbar-title">
-                    <span>VELOCITY • SMART TRANSPORT</span>
+                    <span>
+                      VELOCITY • SMART TRANSPORT
+                    </span>
+
                     <h2>Welcome to VeloCity</h2>
                   </div>
 
@@ -1228,8 +1389,11 @@ function App() {
                     <span className="theme-toggle-icon">
                       {theme === "light" ? "🌙" : "☀️"}
                     </span>
+
                     <span className="theme-toggle-label">
-                      {theme === "light" ? "Dark Mode" : "Light Mode"}
+                      {theme === "light"
+                        ? "Dark Mode"
+                        : "Light Mode"}
                     </span>
                   </button>
 
@@ -1240,12 +1404,19 @@ function App() {
 
                 <main className="portal-content">
                   <Routes>
+                    {/* DEFAULT DASHBOARD */}
+
                     <Route
                       path="/"
                       element={
-                        <Navigate to={defaultPath} replace />
+                        <Navigate
+                          to={defaultPath}
+                          replace
+                        />
                       }
                     />
+
+                    {/* HOME */}
 
                     <Route
                       path="/home"
@@ -1258,6 +1429,8 @@ function App() {
                       }
                     />
 
+                    {/* BUS TRACKING */}
+
                     <Route
                       path="/tracking"
                       element={
@@ -1269,55 +1442,93 @@ function App() {
                       }
                     />
 
+                    {/* BUS–DRIVER ASSIGNMENT */}
+
                     <Route
                       path="/assign-driver"
                       element={
-                        <ProtectedRoute allowedRoles={["Admin"]}>
+                        <ProtectedRoute
+                          allowedRoles={["Admin"]}
+                        >
                           <DriverAssignment />
                         </ProtectedRoute>
                       }
                     />
 
+                    {/* BUS–CONDUCTOR ASSIGNMENT */}
+
+                    <Route
+                      path="/assign-conductor"
+                      element={
+                        <ProtectedRoute
+                          allowedRoles={["Admin"]}
+                        >
+                          <ConductorAssignment />
+                        </ProtectedRoute>
+                      }
+                    />
+
+                    {/* DRIVER DASHBOARD */}
+
                     <Route
                       path="/driver"
                       element={
-                        <ProtectedRoute allowedRoles={["Driver"]}>
+                        <ProtectedRoute
+                          allowedRoles={["Driver"]}
+                        >
                           <DriverDashboard />
                         </ProtectedRoute>
                       }
                     />
 
+                    {/* CONDUCTOR DASHBOARD */}
+
                     <Route
                       path="/conductor"
                       element={
-                        <ProtectedRoute allowedRoles={["Conductor"]}>
+                        <ProtectedRoute
+                          allowedRoles={["Conductor"]}
+                        >
                           <ConductorDashboard />
                         </ProtectedRoute>
                       }
                     />
 
+                    {/* ADMIN DASHBOARD */}
+
                     <Route
                       path="/admin"
                       element={
-                        <ProtectedRoute allowedRoles={["Admin"]}>
+                        <ProtectedRoute
+                          allowedRoles={["Admin"]}
+                        >
                           <AdminDashboard />
                         </ProtectedRoute>
                       }
                     />
 
+                    {/* ADD BUS */}
+
                     <Route
                       path="/admin/add-bus"
                       element={
-                        <ProtectedRoute allowedRoles={["Admin"]}>
+                        <ProtectedRoute
+                          allowedRoles={["Admin"]}
+                        >
                           <AddBus />
                         </ProtectedRoute>
                       }
                     />
 
+                    {/* UNKNOWN ROUTES */}
+
                     <Route
                       path="*"
                       element={
-                        <Navigate to={defaultPath} replace />
+                        <Navigate
+                          to={defaultPath}
+                          replace
+                        />
                       }
                     />
                   </Routes>

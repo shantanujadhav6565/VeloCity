@@ -216,6 +216,24 @@ router.post(
   }
 );
 
+// Conductor signup follows the same approval workflow as Drivers.
+router.post("/conductor-signup", registerLimiter, async (req, res, next) => {
+  try {
+    const { firstName, name, phone, password } = req.body;
+    const applicantName = firstName || name;
+    if (typeof applicantName !== "string" || applicantName.trim().length < 2 || applicantName.trim().length > 50 || !validPhone(phone) || !validPassword(password)) {
+      return res.status(400).json({ success: false, message: "Name, international phone number and a password of 8–72 bytes are required" });
+    }
+    const normalizedPhone = phone.trim();
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const user = await User.create({ firstName: applicantName.trim(), phone: normalizedPhone, password: hashedPassword, role: "Conductor", conductor: null, isActive: true, approvalStatus: "Pending" });
+    return res.status(201).json({ success: true, message: "Conductor signup submitted. Please wait for Admin approval.", user: publicUser(user) });
+  } catch (error) {
+    if (error.code === 11000) return res.status(409).json({ success: false, message: "An account with this phone number already exists" });
+    next(error);
+  }
+});
+
 // ========================================
 // POST /api/auth/login
 // Login by first name and password
@@ -283,6 +301,14 @@ router.post("/login", loginLimiter, async (req, res, next) => {
       });
     }
 
+    if (user.role === "Conductor" && user.approvalStatus !== "Approved") {
+      return res.status(403).json({
+        success: false,
+        approvalStatus: user.approvalStatus || "Pending",
+        message: user.approvalStatus === "Rejected" ? "Your Conductor application was rejected. Please contact Admin." : "Your Conductor account is waiting for Admin approval.",
+      });
+    }
+
     if (user.role === "Driver" && !user.driver) {
       return res.status(403).json({
         success: false,
@@ -290,7 +316,7 @@ router.post("/login", loginLimiter, async (req, res, next) => {
       });
     }
 
-    if (user.role === "Conductor" && !user.conductor) {
+    if (user.role === "Conductor" && (!user.conductor || !(await Conductor.exists({ _id: user.conductor })))) {
       return res.status(403).json({
         success: false,
         message: "Conductor account is not configured yet",
@@ -344,6 +370,56 @@ router.get(
     }
   }
 );
+
+router.get("/conductor-requests", authenticate, authorize("Admin"), async (req, res, next) => {
+  try {
+    const requests = await User.find({ role: "Conductor", approvalStatus: "Pending" }).select("firstName phone role approvalStatus createdAt").sort({ createdAt: 1 });
+    res.json({ success: true, requests });
+  } catch (error) { next(error); }
+});
+
+router.patch("/conductor-requests/:id/approve", authenticate, authorize("Admin"), async (req, res, next) => {
+  let createdConductorId;
+  try {
+    const mongoose = require("mongoose");
+    const { conductorCode } = req.body;
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: "Invalid application ID" });
+    if (typeof conductorCode !== "string" || !/^[A-Za-z0-9_-]{2,30}$/.test(conductorCode.trim())) return res.status(400).json({ success: false, message: "Enter a valid conductor code (2–30 letters, numbers, _ or -)" });
+    const user = await User.findOne({ _id: req.params.id, role: "Conductor", approvalStatus: "Pending" });
+    if (!user) return res.status(404).json({ success: false, message: "Pending Conductor application not found" });
+    const existing = await Conductor.findOne({ $or: [{ phone: user.phone }, { conductorCode: conductorCode.trim() }] });
+    if (existing) return res.status(409).json({ success: false, message: "Phone number or conductor code already exists" });
+    const conductor = await Conductor.create({ conductorCode: conductorCode.trim(), name: user.firstName, phone: user.phone, status: "Available" });
+    createdConductorId = conductor._id;
+    user.conductor = conductor._id;
+    user.approvalStatus = "Approved";
+    await user.save();
+    res.json({ success: true, message: "Conductor approved successfully", conductor, user: publicUser(user) });
+  } catch (error) {
+    if (createdConductorId) await Conductor.findByIdAndDelete(createdConductorId).catch(() => {});
+    if (error.code === 11000) return res.status(409).json({ success: false, message: "Phone number or conductor code already exists" });
+    next(error);
+  }
+});
+
+router.patch("/conductor-requests/:id/reject", authenticate, authorize("Admin"), async (req, res, next) => {
+  try {
+    const mongoose = require("mongoose");
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: "Invalid application ID" });
+    const user = await User.findOne({ _id: req.params.id, role: "Conductor", approvalStatus: "Pending" });
+    if (!user) return res.status(404).json({ success: false, message: "Pending Conductor application not found" });
+    user.approvalStatus = "Rejected";
+    await user.save();
+    res.json({ success: true, message: "Conductor application rejected", user: publicUser(user) });
+  } catch (error) { next(error); }
+});
+
+router.get("/conductors", authenticate, authorize("Admin"), async (req, res, next) => {
+  try {
+    const conductors = await Conductor.find({ status: { $ne: "Inactive" } }).sort({ name: 1 });
+    res.json({ success: true, conductors });
+  } catch (error) { next(error); }
+});
 
 // ========================================
 // PATCH /api/auth/driver-requests/:id/approve
